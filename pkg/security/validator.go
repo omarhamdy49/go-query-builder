@@ -1,0 +1,355 @@
+package security
+
+import (
+	"fmt"
+	"regexp"
+	"strings"
+	"unicode"
+
+	"github.com/go-query-builder/querybuilder/pkg/types"
+)
+
+type SecurityValidator struct {
+	strictMode           bool
+	allowedTablePatterns []*regexp.Regexp
+	allowedColumnPatterns[]*regexp.Regexp
+	forbiddenKeywords    []string
+	maxQueryLength       int
+}
+
+func NewSecurityValidator() *SecurityValidator {
+	return &SecurityValidator{
+		strictMode:           true,
+		allowedTablePatterns: []*regexp.Regexp{
+			regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`),
+		},
+		allowedColumnPatterns: []*regexp.Regexp{
+			regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*(\.[a-zA-Z_][a-zA-Z0-9_]*)?$`),
+		},
+		forbiddenKeywords: []string{
+			"DROP", "ALTER", "CREATE", "TRUNCATE", "EXEC", "EXECUTE",
+			"xp_", "sp_", "INFORMATION_SCHEMA", "SYSTEM",
+		},
+		maxQueryLength: 10000,
+	}
+}
+
+func (v *SecurityValidator) SetStrictMode(strict bool) *SecurityValidator {
+	v.strictMode = strict
+	return v
+}
+
+func (v *SecurityValidator) AddAllowedTablePattern(pattern string) error {
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid table pattern: %w", err)
+	}
+	v.allowedTablePatterns = append(v.allowedTablePatterns, regex)
+	return nil
+}
+
+func (v *SecurityValidator) AddAllowedColumnPattern(pattern string) error {
+	regex, err := regexp.Compile(pattern)
+	if err != nil {
+		return fmt.Errorf("invalid column pattern: %w", err)
+	}
+	v.allowedColumnPatterns = append(v.allowedColumnPatterns, regex)
+	return nil
+}
+
+func (v *SecurityValidator) AddForbiddenKeyword(keyword string) *SecurityValidator {
+	v.forbiddenKeywords = append(v.forbiddenKeywords, strings.ToUpper(keyword))
+	return v
+}
+
+func (v *SecurityValidator) SetMaxQueryLength(length int) *SecurityValidator {
+	v.maxQueryLength = length
+	return v
+}
+
+func (v *SecurityValidator) ValidateTableName(table string) error {
+	if table == "" {
+		return fmt.Errorf("table name cannot be empty")
+	}
+
+	if len(table) > 64 {
+		return fmt.Errorf("table name too long: %d characters (max 64)", len(table))
+	}
+
+	for _, keyword := range v.forbiddenKeywords {
+		if strings.Contains(strings.ToUpper(table), keyword) {
+			return fmt.Errorf("table name contains forbidden keyword: %s", keyword)
+		}
+	}
+
+	if v.strictMode {
+		valid := false
+		for _, pattern := range v.allowedTablePatterns {
+			if pattern.MatchString(table) {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("table name does not match allowed patterns: %s", table)
+		}
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) ValidateColumnName(column string) error {
+	if column == "" {
+		return fmt.Errorf("column name cannot be empty")
+	}
+
+	if len(column) > 64 {
+		return fmt.Errorf("column name too long: %d characters (max 64)", len(column))
+	}
+
+	for _, keyword := range v.forbiddenKeywords {
+		if strings.Contains(strings.ToUpper(column), keyword) {
+			return fmt.Errorf("column name contains forbidden keyword: %s", keyword)
+		}
+	}
+
+	if v.strictMode {
+		valid := false
+		for _, pattern := range v.allowedColumnPatterns {
+			if pattern.MatchString(column) {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			return fmt.Errorf("column name does not match allowed patterns: %s", column)
+		}
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
+	allowedOperators := map[types.Operator]bool{
+		types.OpEqual:              true,
+		types.OpNotEqual:           true,
+		types.OpGreaterThan:        true,
+		types.OpGreaterThanOrEqual: true,
+		types.OpLessThan:           true,
+		types.OpLessThanOrEqual:    true,
+		types.OpLike:               true,
+		types.OpNotLike:            true,
+		types.OpILike:              true,
+		types.OpNotILike:           true,
+		types.OpIn:                 true,
+		types.OpNotIn:              true,
+		types.OpBetween:            true,
+		types.OpNotBetween:         true,
+		types.OpIsNull:             true,
+		types.OpIsNotNull:          true,
+		types.OpExists:             true,
+		types.OpNotExists:          true,
+		types.OpJsonContains:       true,
+		types.OpJsonExtract:        true,
+		types.OpFullText:           true,
+	}
+
+	if !allowedOperators[operator] {
+		return fmt.Errorf("operator not allowed: %s", operator)
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) ValidateValue(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+
+	switch val := value.(type) {
+	case string:
+		return v.validateStringValue(val)
+	case []interface{}:
+		for _, item := range val {
+			if err := v.ValidateValue(item); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) validateStringValue(value string) error {
+	if len(value) > 1000 {
+		return fmt.Errorf("string value too long: %d characters (max 1000)", len(value))
+	}
+
+	suspicious := []string{
+		"<script", "javascript:", "vbscript:", "onload=", "onerror=",
+		"UNION", "SELECT", "INSERT", "UPDATE", "DELETE", "DROP",
+		"--", "/*", "*/", "xp_", "sp_",
+	}
+
+	upperValue := strings.ToUpper(value)
+	for _, pattern := range suspicious {
+		if strings.Contains(upperValue, strings.ToUpper(pattern)) {
+			return fmt.Errorf("string value contains suspicious content: %s", pattern)
+		}
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) ValidateRawSQL(sql string) error {
+	if sql == "" {
+		return fmt.Errorf("raw SQL cannot be empty")
+	}
+
+	if len(sql) > v.maxQueryLength {
+		return fmt.Errorf("raw SQL too long: %d characters (max %d)", len(sql), v.maxQueryLength)
+	}
+
+	for _, keyword := range v.forbiddenKeywords {
+		if strings.Contains(strings.ToUpper(sql), keyword) {
+			return fmt.Errorf("raw SQL contains forbidden keyword: %s", keyword)
+		}
+	}
+
+	if err := v.checkForSQLInjectionPatterns(sql); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) checkForSQLInjectionPatterns(sql string) error {
+	dangerous := []string{
+		`(?i)(union\s+select)`,
+		`(?i)(or\s+1\s*=\s*1)`,
+		`(?i)(and\s+1\s*=\s*1)`,
+		`(?i)('|\"|;|--|\*/)`,
+		`(?i)(exec\s*\()`,
+		`(?i)(drop\s+table)`,
+		`(?i)(alter\s+table)`,
+		`(?i)(create\s+table)`,
+		`(?i)(truncate\s+table)`,
+		`(?i)(information_schema)`,
+	}
+
+	for _, pattern := range dangerous {
+		if matched, _ := regexp.MatchString(pattern, sql); matched {
+			return fmt.Errorf("raw SQL contains potentially dangerous pattern")
+		}
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) SanitizeInput(input string) string {
+	if input == "" {
+		return input
+	}
+
+	result := strings.Builder{}
+	for _, r := range input {
+		if unicode.IsPrint(r) && !unicode.IsControl(r) {
+			result.WriteRune(r)
+		}
+	}
+
+	sanitized := result.String()
+	
+	sanitized = strings.ReplaceAll(sanitized, "<script", "&lt;script")
+	sanitized = strings.ReplaceAll(sanitized, "javascript:", "")
+	sanitized = strings.ReplaceAll(sanitized, "vbscript:", "")
+	
+	return sanitized
+}
+
+func (v *SecurityValidator) EscapeString(input string) string {
+	if input == "" {
+		return input
+	}
+
+	escaped := strings.ReplaceAll(input, "'", "''")
+	escaped = strings.ReplaceAll(escaped, "\\", "\\\\")
+	
+	return escaped
+}
+
+func (v *SecurityValidator) ValidateLimit(limit int) error {
+	if limit < 0 {
+		return fmt.Errorf("limit cannot be negative: %d", limit)
+	}
+	if limit > 10000 {
+		return fmt.Errorf("limit too large: %d (max 10000)", limit)
+	}
+	return nil
+}
+
+func (v *SecurityValidator) ValidateOffset(offset int) error {
+	if offset < 0 {
+		return fmt.Errorf("offset cannot be negative: %d", offset)
+	}
+	if offset > 1000000 {
+		return fmt.Errorf("offset too large: %d (max 1000000)", offset)
+	}
+	return nil
+}
+
+func (v *SecurityValidator) ValidateOrderBy(column string, direction types.OrderDirection) error {
+	if err := v.ValidateColumnName(column); err != nil {
+		return fmt.Errorf("invalid order by column: %w", err)
+	}
+
+	if direction != types.Asc && direction != types.Desc {
+		return fmt.Errorf("invalid order direction: %s", direction)
+	}
+
+	return nil
+}
+
+func (v *SecurityValidator) ValidateGroupBy(column string) error {
+	return v.ValidateColumnName(column)
+}
+
+type SecureQueryBuilder struct {
+	validator *SecurityValidator
+}
+
+func NewSecureQueryBuilder() *SecureQueryBuilder {
+	return &SecureQueryBuilder{
+		validator: NewSecurityValidator(),
+	}
+}
+
+func (sqb *SecureQueryBuilder) GetValidator() *SecurityValidator {
+	return sqb.validator
+}
+
+func (sqb *SecureQueryBuilder) ValidateQuery(table string, columns []string, operators []types.Operator, values []interface{}) error {
+	if err := sqb.validator.ValidateTableName(table); err != nil {
+		return fmt.Errorf("table validation failed: %w", err)
+	}
+
+	for _, column := range columns {
+		if err := sqb.validator.ValidateColumnName(column); err != nil {
+			return fmt.Errorf("column validation failed: %w", err)
+		}
+	}
+
+	for _, operator := range operators {
+		if err := sqb.validator.ValidateOperator(operator); err != nil {
+			return fmt.Errorf("operator validation failed: %w", err)
+		}
+	}
+
+	for _, value := range values {
+		if err := sqb.validator.ValidateValue(value); err != nil {
+			return fmt.Errorf("value validation failed: %w", err)
+		}
+	}
+
+	return nil
+}
