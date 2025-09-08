@@ -8,14 +8,21 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 	"github.com/joho/godotenv"
 )
 
 // LoadFromEnv loads database configuration from environment variables
 func LoadFromEnv() (types.Config, error) {
-	// Try to load .env file (ignore errors if file doesn't exist)
-	loadDotEnv()
+	return loadFromEnvInternal(true)
+}
+
+// loadFromEnvInternal loads configuration with optional .env file loading
+func loadFromEnvInternal(loadEnvFile bool) (types.Config, error) {
+	if loadEnvFile {
+		// Try to load .env file (ignore errors if file doesn't exist)
+		loadDotEnv()
+	}
 	
 	config := types.Config{}
 

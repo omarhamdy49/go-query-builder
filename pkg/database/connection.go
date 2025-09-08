@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"

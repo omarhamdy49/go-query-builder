@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-query-builder/querybuilder"
+	"github.com/omarhamdy49/go-query-builder"
 )
 
 // Secure CRUD Operations Example

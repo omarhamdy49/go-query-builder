@@ -1,0 +1,58 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories
+node_modules/
+vendor/
+tmp
+.env
+
+
+# Log files
+*.log
+
+
+# Protobuf compilation artifacts
+*.pb.*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Editor and IDE-specific files
+.claude
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Go build cache
+go-build/
+*.sum
+
+# Go test binaries
+*.test
+
+# Node modules (if using any Node.js tools)
+
+# Coverage files
+coverage.out
+.coverage/
+*.coverprofile
+*.coverage
+.coveragefinal.*
+uploads/

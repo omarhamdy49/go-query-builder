@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func TestLoadFromEnv(t *testing.T) {
@@ -48,7 +48,7 @@ func TestLoadFromEnv(t *testing.T) {
 		}
 	}()
 
-	config, err := LoadFromEnv()
+	config, err := loadFromEnvInternal(false)
 	if err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
 	}
@@ -96,11 +96,21 @@ func TestLoadFromEnvPostgreSQL(t *testing.T) {
 		"DB_PASSWORD": "testpass",
 	}
 
-	// Save and set env vars
+	// Save and clear all env vars that could affect the test
+	allEnvKeys := []string{
+		"DB_DRIVER", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
+		"DB_SSL_MODE", "DB_MAX_OPEN_CONNS", "DB_MAX_IDLE_CONNS", 
+		"DB_MAX_LIFETIME", "DB_MAX_IDLE_TIME",
+	}
 	originalEnv := make(map[string]string)
-	for key := range testEnv {
+	for _, key := range allEnvKeys {
 		originalEnv[key] = os.Getenv(key)
-		os.Setenv(key, testEnv[key])
+		os.Unsetenv(key)
+	}
+	
+	// Set test env vars
+	for key, value := range testEnv {
+		os.Setenv(key, value)
 	}
 
 	defer func() {
@@ -113,7 +123,7 @@ func TestLoadFromEnvPostgreSQL(t *testing.T) {
 		}
 	}()
 
-	config, err := LoadFromEnv()
+	config, err := loadFromEnvInternal(false)
 	if err != nil {
 		t.Fatalf("Expected no error, got: %v", err)
 	}
@@ -177,23 +187,34 @@ func TestLoadFromEnvMissingRequired(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Clear all env vars first
+			allEnvKeys := []string{
+				"DB_DRIVER", "DB_HOST", "DB_PORT", "DB_NAME", "DB_USER", "DB_PASSWORD",
+				"DB_SSL_MODE", "DB_MAX_OPEN_CONNS", "DB_MAX_IDLE_CONNS", 
+				"DB_MAX_LIFETIME", "DB_MAX_IDLE_TIME",
+			}
+			for _, key := range allEnvKeys {
+				os.Unsetenv(key)
+			}
+			defer func() {
+				for _, key := range allEnvKeys {
+					os.Unsetenv(key)
+				}
+			}()
+			
 			// Set test env vars
 			for key, value := range tt.envVars {
 				os.Setenv(key, value)
 			}
 
-			_, err := LoadFromEnv()
+			_, err := loadFromEnvInternal(false)
 			if err == nil {
 				t.Errorf("Expected error, got nil")
+				return
 			}
 
 			if err.Error() != tt.expected {
 				t.Errorf("Expected error '%s', got '%s'", tt.expected, err.Error())
-			}
-
-			// Clean up
-			for key := range tt.envVars {
-				os.Unsetenv(key)
 			}
 		})
 	}

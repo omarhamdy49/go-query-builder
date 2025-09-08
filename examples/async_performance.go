@@ -7,8 +7,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-query-builder/querybuilder"
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 // Async and Performance Examples
@@ -354,8 +354,7 @@ func performanceMonitoringExample() {
 	fmt.Println()
 }
 
-// Uncomment to run these examples
-// func main() {
-// 	asyncPerformanceExample()
-// 	performanceMonitoringExample()
-// }
+func main() {
+	asyncPerformanceExample()
+	performanceMonitoringExample()
+}

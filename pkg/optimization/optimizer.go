@@ -10,7 +10,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 // QueryCache implements a thread-safe in-memory query cache

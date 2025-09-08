@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func (e *QueryExecutor) Upsert(ctx context.Context, qb QueryBuilderInterface, values []map[string]interface{}, options types.UpsertOptions) error {

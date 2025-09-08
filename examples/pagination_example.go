@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-query-builder/querybuilder"
+	"github.com/omarhamdy49/go-query-builder"
 )
 
 func paginationExample() {
@@ -233,7 +233,6 @@ func paginationExample() {
 	fmt.Println("\n✨ Pagination examples complete!")
 }
 
-// Uncomment to run this example
-// func main() {
-// 	paginationExample()
-// }
+func main() {
+	paginationExample()
+}

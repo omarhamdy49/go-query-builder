@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func (e *QueryExecutor) Chunk(ctx context.Context, qb QueryBuilderInterface, size int, callback types.ChunkFunc) error {

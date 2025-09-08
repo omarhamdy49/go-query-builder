@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 // MockExecutor for testing

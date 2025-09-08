@@ -6,13 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-query-builder/querybuilder"
+	"github.com/omarhamdy49/go-query-builder"
 )
 
 // Advanced Security Validation Example
 // Demonstrates protection against sophisticated attack vectors
 // Uncomment to run this example
-// func main() {
 func advancedSecurityValidation() {
 	fmt.Println("🔐 Advanced Security Validation & Attack Prevention")
 	fmt.Println("==================================================")
@@ -370,7 +369,6 @@ func advancedSecurityValidation() {
 	fmt.Println("\n🚀 Your Go Query Builder meets enterprise security standards!")
 }
 
-// Uncomment to run advanced security validation
-// func main() {
-//     advancedSecurityValidation()
-// }
+func main() {
+    advancedSecurityValidation()
+}

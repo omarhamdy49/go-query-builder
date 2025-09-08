@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/go-query-builder/querybuilder/pkg/clauses"
-	"github.com/go-query-builder/querybuilder/pkg/execution"
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/clauses"
+	"github.com/omarhamdy49/go-query-builder/pkg/execution"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 type Builder struct {

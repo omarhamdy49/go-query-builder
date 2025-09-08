@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func (e *QueryExecutor) UpdateJson(ctx context.Context, qb QueryBuilderInterface, column string, path string, value interface{}) (int64, error) {

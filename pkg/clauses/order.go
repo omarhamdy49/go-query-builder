@@ -1,7 +1,7 @@
 package clauses
 
 import (
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 type OrderClause struct {

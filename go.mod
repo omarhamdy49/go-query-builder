@@ -1,4 +1,4 @@
-module github.com/go-query-builder/querybuilder
+module github.com/omarhamdy49/go-query-builder
 
 go 1.21
 

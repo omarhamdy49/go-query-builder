@@ -3,7 +3,7 @@ package security
 import (
 	"testing"
 
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func TestValidateTableName(t *testing.T) {

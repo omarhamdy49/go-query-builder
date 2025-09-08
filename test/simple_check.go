@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/go-query-builder/querybuilder"
+	"github.com/omarhamdy49/go-query-builder"
 )
 
 // Simple test to verify basic functionality without requiring actual database

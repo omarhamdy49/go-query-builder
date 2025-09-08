@@ -6,10 +6,10 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/go-query-builder/querybuilder/pkg/config"
-	"github.com/go-query-builder/querybuilder/pkg/database"
-	"github.com/go-query-builder/querybuilder/pkg/query"
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/config"
+	"github.com/omarhamdy49/go-query-builder/pkg/database"
+	"github.com/omarhamdy49/go-query-builder/pkg/query"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 // Global singleton instance

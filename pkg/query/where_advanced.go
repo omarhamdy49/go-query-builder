@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-query-builder/querybuilder/pkg/clauses"
-	"github.com/go-query-builder/querybuilder/pkg/types"
+	"github.com/omarhamdy49/go-query-builder/pkg/clauses"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
 func (qb *Builder) WhereDate(column string, args ...interface{}) types.QueryBuilder {
