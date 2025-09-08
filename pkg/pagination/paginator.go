@@ -11,11 +11,13 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// Paginator handles pagination of query results.
 type Paginator struct {
 	executor types.QueryExecutor
 	driver   types.Driver
 }
 
+// NewPaginator creates a new Paginator instance.
 func NewPaginator(executor types.QueryExecutor, driver types.Driver) *Paginator {
 	return &Paginator{
 		executor: executor,
@@ -23,6 +25,7 @@ func NewPaginator(executor types.QueryExecutor, driver types.Driver) *Paginator 
 	}
 }
 
+// QueryBuilderInterface defines the minimal interface for query builders used in pagination.
 type QueryBuilderInterface interface {
 	ToSQL() (string, []any, error)
 	Clone() types.QueryBuilder
@@ -31,6 +34,7 @@ type QueryBuilderInterface interface {
 	Offset(int) types.QueryBuilder
 }
 
+// Paginate executes a paginated query with full metadata.
 func (p *Paginator) Paginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*types.PaginationResult, error) {
 	if page < 1 {
 		page = 1
@@ -82,6 +86,7 @@ func (p *Paginator) Paginate(ctx context.Context, qb QueryBuilderInterface, page
 	}, nil
 }
 
+// SimplePaginate executes a paginated query without total count calculation.
 func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*types.PaginationResult, error) {
 	if page < 1 {
 		page = 1

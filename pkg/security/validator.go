@@ -1,3 +1,4 @@
+// Package security provides security validation utilities for SQL queries and inputs.
 package security
 
 import (
@@ -9,6 +10,7 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// SecurityValidator provides security validation for SQL queries and database identifiers.
 type SecurityValidator struct {
 	strictMode           bool
 	allowedTablePatterns []*regexp.Regexp
@@ -17,6 +19,7 @@ type SecurityValidator struct {
 	maxQueryLength       int
 }
 
+// NewSecurityValidator creates a new SecurityValidator with default security settings.
 func NewSecurityValidator() *SecurityValidator {
 	return &SecurityValidator{
 		strictMode:           true,
@@ -149,8 +152,8 @@ func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
 		types.OpIsNotNull:          true,
 		types.OpExists:             true,
 		types.OpNotExists:          true,
-		types.OpJsonContains:       true,
-		types.OpJsonExtract:        true,
+		types.OpJSONContains:       true,
+		types.OpJSONExtract:        true,
 		types.OpFullText:           true,
 	}
 

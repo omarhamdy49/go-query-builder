@@ -1,3 +1,4 @@
+// Package database provides database connection management and abstraction layer.
 package database
 
 import (

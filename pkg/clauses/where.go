@@ -95,7 +95,7 @@ func NewWhereJsonContainsClause(column string, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "json",
 		Column:   column,
-		Operator: types.OpJsonContains,
+		Operator: types.OpJSONContains,
 		Value:    value,
 		Boolean:  types.And,
 	}

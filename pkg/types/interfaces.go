@@ -1,3 +1,4 @@
+// Package types contains core types, interfaces, and constants used throughout the query builder.
 package types
 
 import (
@@ -5,6 +6,7 @@ import (
 	"database/sql/driver"
 )
 
+// QueryExecutor defines the interface for executing database queries.
 type QueryExecutor interface {
 	QueryContext(ctx context.Context, query string, args ...interface{}) (Rows, error)
 	QueryRowContext(ctx context.Context, query string, args ...interface{}) Row
@@ -13,6 +15,7 @@ type QueryExecutor interface {
 	BeginTx(ctx context.Context, opts *TxOptions) (Tx, error)
 }
 
+// Rows represents the result of a query.
 type Rows interface {
 	Next() bool
 	Scan(dest ...interface{}) error
@@ -21,26 +24,31 @@ type Rows interface {
 	Err() error
 }
 
+// Row represents a single row result from a query.
 type Row interface {
 	Scan(dest ...interface{}) error
 }
 
+// Result represents the result of an exec query.
 type Result interface {
 	LastInsertId() (int64, error)
 	RowsAffected() (int64, error)
 }
 
+// Tx represents a database transaction.
 type Tx interface {
 	QueryExecutor
 	Commit() error
 	Rollback() error
 }
 
+// TxOptions holds transaction configuration options.
 type TxOptions struct {
 	Isolation int
 	ReadOnly  bool
 }
 
+// DB represents a database connection.
 type DB interface {
 	QueryExecutor
 	Driver() Driver
@@ -49,12 +57,14 @@ type DB interface {
 	Stats() DBStats
 }
 
+// DBStats holds database connection statistics.
 type DBStats struct {
 	OpenConnections int
-	InUse          int
-	Idle           int
+	InUse           int
+	Idle            int
 }
 
+// QueryBuilder defines the interface for building SQL queries fluently.
 type QueryBuilder interface {
 	From(table string) QueryBuilder
 	Select(columns ...string) QueryBuilder
@@ -159,42 +169,54 @@ type QueryBuilder interface {
 	Clone() QueryBuilder
 }
 
+// ConditionalFunc represents a function that can conditionally modify a query builder.
 type ConditionalFunc func(QueryBuilder) QueryBuilder
+
+// ScopeFunc represents a function that applies a scope to a query builder.
 type ScopeFunc func(QueryBuilder) QueryBuilder
+
+// ChunkFunc represents a function that processes data chunks.
 type ChunkFunc func(Collection) error
+
+// LazyFunc represents a function for lazy data processing.
 type LazyFunc func(map[string]interface{}) error
 
-// Async result types
+// AsyncResult holds the result of an asynchronous operation.
 type AsyncResult struct {
 	Data  Collection
 	Error error
 }
 
+// AsyncCountResult holds the result of an asynchronous count operation.
 type AsyncCountResult struct {
 	Count int64
 	Error error
 }
 
+// AsyncPaginationResult holds the result of an asynchronous pagination operation.
 type AsyncPaginationResult struct {
 	Result PaginationResult
 	Error  error
 }
 
+// JSONValue wraps a value for JSON handling.
 type JSONValue struct {
 	Val interface{}
 }
 
+// Value implements the driver.Valuer interface.
 func (j JSONValue) Value() (driver.Value, error) {
 	return j.Val, nil
 }
 
+// Collection defines the interface for working with collections of data.
 type Collection interface {
 	ToSlice() []map[string]interface{}
 	Pluck(column string) []interface{}
 	First() map[string]interface{}
 	Count() int
 	IsEmpty() bool
-	Each(func(map[string]interface{}) bool)
-	Filter(func(map[string]interface{}) bool) Collection
-	Map(func(map[string]interface{}) map[string]interface{}) Collection
+	Each(fn func(item map[string]interface{}) bool)
+	Filter(predicate func(item map[string]interface{}) bool) Collection
+	Map(mapper func(item map[string]interface{}) map[string]interface{}) Collection
 }

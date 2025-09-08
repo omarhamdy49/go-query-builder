@@ -8,11 +8,13 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Transaction wraps a database transaction with additional functionality.
 type Transaction struct {
 	tx     *sqlx.Tx
 	driver types.Driver
 }
 
+// NewTransaction creates a new Transaction wrapper.
 func NewTransaction(tx *sqlx.Tx, driver types.Driver) *Transaction {
 	return &Transaction{
 		tx:     tx,
