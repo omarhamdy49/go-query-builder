@@ -210,6 +210,7 @@ func (c *CollectionImpl) Each(fn func(map[string]interface{}) bool) {
 // Filter returns a new collection with items that match the predicate.
 func (c *CollectionImpl) Filter(predicate func(map[string]interface{}) bool) Collection {
 	var filtered []map[string]interface{}
+
 	for _, item := range c.data {
 		if predicate(item) {
 			filtered = append(filtered, item)

@@ -6,12 +6,12 @@ import (
 	"log"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 )
 
 // Secure CRUD Operations Example
 // Demonstrates INSERT, UPDATE, DELETE with highest security standards
-func main() {
+func main4() {
 	fmt.Println("🔒 Secure CRUD Operations with SQL Injection Prevention")
 	fmt.Println("======================================================")
 

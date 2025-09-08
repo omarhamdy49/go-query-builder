@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
-func main() {
+func main2() {
 	ctx := context.Background()
 
 	config := querybuilder.Config{

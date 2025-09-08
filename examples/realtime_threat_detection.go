@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 )
 
 // Real-Time Threat Detection & Advanced Protection
@@ -28,21 +28,21 @@ func realtimeThreatDetection() {
 
 	// Initialize rate limiter for demo
 	rateLimiter := NewRateLimiter()
-	
+
 	fmt.Println("\n⚡ Testing Rate Limiting Protection:")
-	
+
 	// Simulate rapid requests from same user
 	userID := "demo_user"
 	for i := 1; i <= 12; i++ {
 		if rateLimiter.Allow(userID) {
 			fmt.Printf("   Request %d: ✅ ALLOWED (within rate limit)\n", i)
-			
+
 			// Simulate a query
 			_, err := querybuilder.QB().Table("users").
 				Where("active", true).
 				Limit(1).
 				Get(ctx)
-			
+
 			if err != nil {
 				fmt.Printf("     ⚠️  Query failed: %v\n", err)
 			}
@@ -59,7 +59,7 @@ func realtimeThreatDetection() {
 	fmt.Println("==========================================")
 
 	fmt.Println("\n🔍 Analyzing Query Patterns for Anomalies:")
-	
+
 	// Simulate various query patterns
 	queryPatterns := []struct {
 		description string
@@ -79,7 +79,7 @@ func realtimeThreatDetection() {
 			"Suspicious Enumeration Pattern",
 			[]string{
 				"SELECT * FROM users WHERE id = 1",
-				"SELECT * FROM users WHERE id = 2", 
+				"SELECT * FROM users WHERE id = 2",
 				"SELECT * FROM users WHERE id = 3",
 				"SELECT * FROM users WHERE id = 4",
 			},
@@ -98,13 +98,13 @@ func realtimeThreatDetection() {
 	}
 
 	detector := NewAnomalyDetector()
-	
+
 	for _, pattern := range queryPatterns {
 		fmt.Printf("\n   📊 Pattern: %s (Risk: %s)\n", pattern.description, pattern.riskLevel)
-		
+
 		anomalyScore := detector.AnalyzeQueryPattern(pattern.queries)
 		fmt.Printf("     Anomaly Score: %.2f/10.0\n", anomalyScore)
-		
+
 		if anomalyScore > 7.0 {
 			fmt.Printf("     🚨 HIGH RISK: Automatic security response triggered!\n")
 			detector.TriggerSecurityResponse(pattern.description, anomalyScore)
@@ -122,9 +122,9 @@ func realtimeThreatDetection() {
 	fmt.Println("=============================")
 
 	fmt.Println("\n🛡️  Testing Intelligent Query Protection:")
-	
+
 	queryFirewall := NewQueryFirewall()
-	
+
 	// Test various queries against firewall rules
 	testQueries := []struct {
 		description string
@@ -164,18 +164,18 @@ func realtimeThreatDetection() {
 
 	for _, test := range testQueries {
 		fmt.Printf("\n   🧪 Testing: %s\n", test.description)
-		
+
 		if queryFirewall.ShouldBlock(test.description) {
 			fmt.Printf("     🚫 BLOCKED by intelligent firewall\n")
 			queryFirewall.LogBlockedQuery(test.description, "FIREWALL_RULE_VIOLATION")
 		} else {
 			fmt.Printf("     ✅ ALLOWED through firewall\n")
-			
+
 			// Execute the actual query
 			start := time.Now()
 			count, err := test.query()
 			duration := time.Since(start)
-			
+
 			if err != nil {
 				fmt.Printf("     ❌ Query execution failed: %v\n", err)
 			} else {
@@ -191,9 +191,9 @@ func realtimeThreatDetection() {
 	fmt.Println("==========================")
 
 	fmt.Println("\n🍯 Deploying Security Honeypots:")
-	
+
 	honeypotManager := NewHoneypotManager()
-	
+
 	// Set up honeypot traps
 	honeypots := []struct {
 		name        string
@@ -215,10 +215,10 @@ func realtimeThreatDetection() {
 	// Test honeypot triggers
 	fmt.Println("\n   🕵️  Simulating Honeypot Triggers:")
 	suspiciousQueries := []string{
-		"admin_users",     // Should trigger fake table honeypot
-		"password",        // Should trigger sensitive column honeypot  
-		"user_secrets",    // Should trigger high-value target honeypot
-		"backup_data",     // Should trigger data exfiltration honeypot
+		"admin_users",  // Should trigger fake table honeypot
+		"password",     // Should trigger sensitive column honeypot
+		"user_secrets", // Should trigger high-value target honeypot
+		"backup_data",  // Should trigger data exfiltration honeypot
 	}
 
 	for _, query := range suspiciousQueries {
@@ -235,9 +235,9 @@ func realtimeThreatDetection() {
 	fmt.Println("===============================")
 
 	fmt.Println("\n🧠 Threat Intelligence Analysis:")
-	
+
 	threatIntel := NewThreatIntelligence()
-	
+
 	// Analyze current threats
 	threats := []struct {
 		indicator   string
@@ -254,10 +254,10 @@ func realtimeThreatDetection() {
 	for _, threat := range threats {
 		fmt.Printf("\n   🎯 Threat: %s (%s - %s)\n", threat.indicator, threat.threatType, threat.severity)
 		fmt.Printf("      Description: %s\n", threat.description)
-		
+
 		riskScore := threatIntel.CalculateThreatScore(threat.indicator, threat.threatType)
 		fmt.Printf("      Risk Score: %.1f/10.0\n", riskScore)
-		
+
 		if riskScore >= 8.0 {
 			fmt.Printf("      🚨 CRITICAL: Immediate action required!\n")
 			threatIntel.InitiateIncidentResponse(threat.indicator, threat.threatType)
@@ -312,7 +312,7 @@ func realtimeThreatDetection() {
 
 	fmt.Println("\n🏆 Protection Levels Achieved:")
 	fmt.Println("  🥇 ZERO-DAY PROTECTION: Advanced pattern recognition")
-	fmt.Println("  🥇 AI-POWERED DEFENSE: Machine learning threat detection") 
+	fmt.Println("  🥇 AI-POWERED DEFENSE: Machine learning threat detection")
 	fmt.Println("  🥇 REAL-TIME RESPONSE: Sub-second threat mitigation")
 	fmt.Println("  🥇 MILITARY-GRADE: Nation-state level protection")
 
@@ -320,9 +320,9 @@ func realtimeThreatDetection() {
 	fmt.Println("🚀 Threat detection capability: NEXT-GENERATION CYBERSECURITY! 🚀")
 }
 
-func main() {
-    realtimeThreatDetection()
-}
+// func main() {
+//     realtimeThreatDetection()
+// }
 
 // Security components implementation
 type RateLimiter struct {
@@ -343,10 +343,10 @@ func NewRateLimiter() *RateLimiter {
 func (rl *RateLimiter) Allow(userID string) bool {
 	rl.mutex.Lock()
 	defer rl.mutex.Unlock()
-	
+
 	now := time.Now()
 	userRequests := rl.requests[userID]
-	
+
 	// Clean old requests
 	var validRequests []time.Time
 	for _, req := range userRequests {
@@ -354,11 +354,11 @@ func (rl *RateLimiter) Allow(userID string) bool {
 			validRequests = append(validRequests, req)
 		}
 	}
-	
+
 	if len(validRequests) >= rl.limit {
 		return false
 	}
-	
+
 	validRequests = append(validRequests, now)
 	rl.requests[userID] = validRequests
 	return true
@@ -380,12 +380,12 @@ func NewAnomalyDetector() *AnomalyDetector {
 
 func (ad *AnomalyDetector) AnalyzeQueryPattern(queries []string) float64 {
 	score := 0.0
-	
+
 	// Check for enumeration patterns
 	if len(queries) > 3 {
 		score += 3.0
 	}
-	
+
 	// Check for admin-related queries
 	for _, query := range queries {
 		if strings.Contains(strings.ToLower(query), "admin") {
@@ -398,12 +398,12 @@ func (ad *AnomalyDetector) AnalyzeQueryPattern(queries []string) float64 {
 			score += 3.0
 		}
 	}
-	
+
 	// Cap at 10.0
 	if score > 10.0 {
 		score = 10.0
 	}
-	
+
 	return score
 }
 
@@ -419,24 +419,24 @@ func NewQueryFirewall() *QueryFirewall {
 	qf := &QueryFirewall{
 		rules: make(map[string]bool),
 	}
-	
+
 	// Initialize firewall rules
 	qf.rules["broad scan"] = true
 	qf.rules["data mining"] = true
 	qf.rules["bulk extract"] = true
-	
+
 	return qf
 }
 
 func (qf *QueryFirewall) ShouldBlock(query string) bool {
 	queryLower := strings.ToLower(query)
-	
+
 	for rule := range qf.rules {
 		if strings.Contains(queryLower, rule) {
 			return true
 		}
 	}
-	
+
 	return false
 }
 
@@ -479,13 +479,13 @@ func NewThreatIntelligence() *ThreatIntelligence {
 	ti := &ThreatIntelligence{
 		knownThreats: make(map[string]float64),
 	}
-	
+
 	// Load threat signatures
 	ti.knownThreats["SQL_INJECTION"] = 9.0
 	ti.knownThreats["DATA_EXFILTRATION"] = 8.5
 	ti.knownThreats["ENUMERATION"] = 6.0
 	ti.knownThreats["SUSPICIOUS_IP"] = 5.0
-	
+
 	return ti
 }
 
@@ -494,7 +494,7 @@ func (ti *ThreatIntelligence) CalculateThreatScore(indicator, threatType string)
 	if baseScore == 0 {
 		baseScore = 3.0 // Default for unknown threats
 	}
-	
+
 	return baseScore
 }
 

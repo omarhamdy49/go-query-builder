@@ -146,7 +146,7 @@ func (b *Builder) deriveTableNameFromType(model interface{}) string {
 	return b.pluralize(snakeName)
 }
 
-// toSnakeCase converts CamelCase to snake_case
+// toSnakeCase converts CamelCase to snake_case.
 func (b *Builder) toSnakeCase(str string) string {
 	var result strings.Builder
 
@@ -161,7 +161,7 @@ func (b *Builder) toSnakeCase(str string) string {
 	return strings.ToLower(result.String())
 }
 
-// pluralize adds 's' to make table name plural (simple implementation)
+// pluralize adds 's' to make table name plural (simple implementation).
 func (b *Builder) pluralize(str string) string {
 	if strings.HasSuffix(str, "y") {
 		return strings.TrimSuffix(str, "y") + "ies"
@@ -174,7 +174,7 @@ func (b *Builder) pluralize(str string) string {
 	return str + "s"
 }
 
-// getConnectionNames returns list of available connection names
+// getConnectionNames returns list of available connection names.
 func (b *Builder) getConnectionNames() []string {
 	b.mu.RLock()
 	defer b.mu.RUnlock()

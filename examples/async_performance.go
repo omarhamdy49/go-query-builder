@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
@@ -24,11 +24,11 @@ func asyncPerformanceExample() {
 
 	// Single async query
 	usersChan := querybuilder.QB().Table("users").GetAsync(ctx)
-	
+
 	// Do other work while query executes...
 	fmt.Println("📊 Query running in background...")
 	time.Sleep(100 * time.Millisecond) // Simulate other work
-	
+
 	// Wait for result
 	result := <-usersChan
 	if result.Error != nil {
@@ -41,7 +41,7 @@ func asyncPerformanceExample() {
 	countChan := querybuilder.QB().Table("posts").
 		Where("status", "published").
 		CountAsync(ctx)
-		
+
 	countResult := <-countChan
 	if countResult.Error != nil {
 		log.Printf("Count error: %v", countResult.Error)
@@ -63,17 +63,17 @@ func asyncPerformanceExample() {
 		name  string
 		query func() <-chan types.AsyncResult
 	}{
-		{"Users", func() <-chan types.AsyncResult { 
-			return querybuilder.QB().Table("users").Where("status", "active").GetAsync(ctx) 
+		{"Users", func() <-chan types.AsyncResult {
+			return querybuilder.QB().Table("users").Where("status", "active").GetAsync(ctx)
 		}},
-		{"Posts", func() <-chan types.AsyncResult { 
-			return querybuilder.QB().Table("posts").Where("status", "published").GetAsync(ctx) 
+		{"Posts", func() <-chan types.AsyncResult {
+			return querybuilder.QB().Table("posts").Where("status", "published").GetAsync(ctx)
 		}},
-		{"Comments", func() <-chan types.AsyncResult { 
-			return querybuilder.QB().Table("comments").Where("approved", true).GetAsync(ctx) 
+		{"Comments", func() <-chan types.AsyncResult {
+			return querybuilder.QB().Table("comments").Where("approved", true).GetAsync(ctx)
 		}},
-		{"Categories", func() <-chan types.AsyncResult { 
-			return querybuilder.QB().Table("categories").GetAsync(ctx) 
+		{"Categories", func() <-chan types.AsyncResult {
+			return querybuilder.QB().Table("categories").GetAsync(ctx)
 		}},
 	}
 
@@ -85,7 +85,7 @@ func asyncPerformanceExample() {
 			defer wg.Done()
 			resultChan := queryFunc()
 			result := <-resultChan
-			
+
 			if result.Error != nil {
 				results <- fmt.Sprintf("❌ %s: Error - %v", name, result.Error)
 			} else {
@@ -120,17 +120,17 @@ func asyncPerformanceExample() {
 		PaginateAsync(ctx, 1, 10)
 
 	fmt.Println("📄 Pagination running asynchronously...")
-	
+
 	paginationResult := <-paginationChan
 	if paginationResult.Error != nil {
 		log.Printf("Pagination error: %v", paginationResult.Error)
 	} else {
 		p := paginationResult.Result
 		fmt.Printf("✅ Async pagination completed:\n")
-		fmt.Printf("   📊 Page %d of %d (%d total users)\n", 
+		fmt.Printf("   📊 Page %d of %d (%d total users)\n",
 			p.Meta.CurrentPage, p.Meta.LastPage, p.Meta.Total)
 		fmt.Printf("   📋 Loaded %d users on this page\n", p.Count())
-		
+
 		if p.HasMorePages() {
 			fmt.Printf("   ➡️  Next page available: %d\n", *p.GetNextPageNumber())
 		}
@@ -145,7 +145,7 @@ func asyncPerformanceExample() {
 	// Race multiple data sources for the fastest response
 	primaryChan := querybuilder.QB().Table("users").GetAsync(ctx)
 	backupChan := querybuilder.QB().Connection("backup").Table("users").GetAsync(ctx)
-	
+
 	select {
 	case result := <-primaryChan:
 		if result.Error == nil {
@@ -200,17 +200,17 @@ func asyncPerformanceExample() {
 		// Stage 3: Process each user asynchronously
 		var processingWg sync.WaitGroup
 		processedCount := 0
-		
+
 		result.Data.Each(func(user map[string]any) bool {
 			processingWg.Add(1)
 			go func(userID any) {
 				defer processingWg.Done()
-				
+
 				// Simulate async processing (e.g., sending emails, updating records)
 				time.Sleep(50 * time.Millisecond)
 				processedCount++
 			}(user["id"])
-			
+
 			return true
 		})
 
@@ -313,7 +313,7 @@ func asyncPerformanceExample() {
 		} else if result.Data.Count() > 0 {
 			userDetail := result.Data.First()
 			allUserDetails = append(allUserDetails, userDetail)
-			fmt.Printf("✅ User %d details loaded: %s\n", 
+			fmt.Printf("✅ User %d details loaded: %s\n",
 				userIDs[i], userDetail["name"])
 		}
 	}
@@ -354,7 +354,7 @@ func performanceMonitoringExample() {
 	fmt.Println()
 }
 
-func main() {
-	asyncPerformanceExample()
-	performanceMonitoringExample()
-}
+// func main() {
+// 	asyncPerformanceExample()
+// 	performanceMonitoringExample()
+// }

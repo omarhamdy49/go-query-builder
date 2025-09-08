@@ -10,12 +10,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 )
 
 // Ultimate Security Features - Enterprise-Grade Protection
 // Demonstrates the highest possible security standards for database operations
-func main() {
+func main3() {
 	fmt.Println("🔐 ULTIMATE Security Features - Enterprise Grade Protection")
 	fmt.Println("=========================================================")
 

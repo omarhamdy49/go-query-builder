@@ -1,0 +1,50 @@
+site_name: Go Query Builder
+site_description: "Laravel-style query builder for Go — full developer guide."
+site_url: https://omarhamdy49.github.io/go-query-builder/
+repo_name: omarhamdy49/go-query-builder
+repo_url: https://github.com/omarhamdy49/go-query-builder
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+  language: en
+  icon:
+    repo: fontawesome/brands/github
+plugins:
+  - search
+  - mike
+markdown_extensions:
+  - admonition
+  - def_list
+  - footnotes
+  - tables
+  - toc:
+      permalink: true
+  - codehilite
+nav:
+  - Introduction: index.md
+  - Getting Started: getting-started.md
+  - Core Concepts: core-concepts.md
+  - Retrieving Results: retrieving-results.md
+  - Filtering: filtering.md
+  - Joins: joins.md
+  - Aggregates & Grouping: aggregates-grouping.md
+  - Writing Data: writing-data.md
+  - Pagination: pagination.md
+  - Security & Performance: security-performance.md
+  - Project Structure & Testing: project-structure-testing.md
+  - FAQ: faq.md
+  - API Cheatsheet: api-cheatsheet.md
+  - Contributing: contributing.md
+  - Changelog: changelog.md
+extra:
+  version:
+    provider: mike
+    default: latest
+    alias: latest
