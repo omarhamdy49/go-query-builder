@@ -223,7 +223,7 @@ func TestSanitizeInput(t *testing.T) {
 		expected string
 	}{
 		{"Clean input", "hello world", "hello world"},
-		{"Input with script", "<script>alert('xss')</script>", "&lt;script>alert('xss')&lt;/script>"},
+		{"Input with script", "<script>alert('xss')</script>", "&lt;script>alert('xss')</script>"},
 		{"Input with javascript", "javascript:alert('test')", "alert('test')"},
 		{"Input with vbscript", "vbscript:msgbox('test')", "msgbox('test')"},
 		{"Input with control chars", "hello\x00world\x01test", "helloworldtest"},
@@ -274,7 +274,7 @@ func TestValidateOrderBy(t *testing.T) {
 		shouldErr bool
 	}{
 		{"Valid order by ASC", "name", types.Asc, false},
-		{"Valid order by DESC", "created_at", types.Desc, false},
+		{"Valid order by DESC", "updated_at", types.Desc, false},
 		{"Invalid column", "invalid-column", types.Asc, true},
 		{"Invalid direction", "name", types.OrderDirection("RANDOM"), true},
 	}

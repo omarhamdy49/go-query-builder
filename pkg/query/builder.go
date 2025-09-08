@@ -519,6 +519,172 @@ func (qb *Builder) Count(ctx context.Context) (int64, error) {
 	return qb.executor_.Count(ctx, qb)
 }
 
+func (qb *Builder) Paginate(ctx context.Context, page int, perPage int) (types.PaginationResult, error) {
+	// Validate input parameters
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 15 // Default Laravel per page
+	}
+
+	// Calculate offset
+	offset := (page - 1) * perPage
+
+	// Get total count using a clone to avoid affecting the original query
+	countQuery := qb.Clone()
+	// Remove limit and offset for count query
+	countQuery.(*Builder).limitValue = nil
+	countQuery.(*Builder).offsetValue = nil
+	// Clear selects for count query to avoid issues with GROUP BY
+	if len(qb.groups) == 0 {
+		countQuery.(*Builder).selects = make([]*clauses.SelectClause, 0)
+	}
+
+	total, err := countQuery.Count(ctx)
+	if err != nil {
+		return types.PaginationResult{}, fmt.Errorf("failed to get total count: %w", err)
+	}
+
+	// Get paginated data
+	paginatedQuery := qb.Clone()
+	paginatedQuery = paginatedQuery.Limit(perPage).Offset(offset)
+	data, err := paginatedQuery.Get(ctx)
+	if err != nil {
+		return types.PaginationResult{}, fmt.Errorf("failed to get paginated data: %w", err)
+	}
+
+	// Calculate pagination metadata
+	lastPage := int((total + int64(perPage) - 1) / int64(perPage)) // Ceiling division
+	if lastPage == 0 {
+		lastPage = 1
+	}
+
+	from := offset + 1
+	to := offset + data.Count()
+	if total == 0 {
+		from = 0
+		to = 0
+	}
+
+	var nextPage *int
+	if page < lastPage {
+		next := page + 1
+		nextPage = &next
+	}
+
+	// Build pagination result
+	result := types.PaginationResult{
+		Data: data,
+		Meta: types.PaginationMeta{
+			CurrentPage: page,
+			NextPage:    nextPage,
+			PerPage:     perPage,
+			Total:       total,
+			LastPage:    lastPage,
+			From:        from,
+			To:          to,
+		},
+	}
+
+	return result, nil
+}
+
+func (qb *Builder) SimplePaginate(ctx context.Context, page int, perPage int) (types.PaginationResult, error) {
+	// Validate input parameters
+	if page < 1 {
+		page = 1
+	}
+	if perPage < 1 {
+		perPage = 15 // Default Laravel per page
+	}
+
+	// Calculate offset
+	offset := (page - 1) * perPage
+
+	// Get one more item than requested to check if there are more pages
+	checkQuery := qb.Clone()
+	data, err := checkQuery.Limit(perPage + 1).Offset(offset).Get(ctx)
+	if err != nil {
+		return types.PaginationResult{}, fmt.Errorf("failed to get paginated data: %w", err)
+	}
+
+	// Check if there are more pages
+	hasMore := data.Count() > perPage
+	if hasMore {
+		// Remove the extra item
+		items := data.ToSlice()
+		data = types.NewCollection(items[:perPage])
+	}
+
+	// Calculate metadata (without total count for performance)
+	from := offset + 1
+	to := offset + data.Count()
+	if data.Count() == 0 {
+		from = 0
+		to = 0
+	}
+
+	var nextPage *int
+	if hasMore {
+		next := page + 1
+		nextPage = &next
+	}
+
+	// Build simple pagination result (no total, no last_page)
+	result := types.PaginationResult{
+		Data: data,
+		Meta: types.PaginationMeta{
+			CurrentPage: page,
+			NextPage:    nextPage,
+			PerPage:     perPage,
+			Total:       -1, // Indicate unknown total
+			LastPage:    -1, // Indicate unknown last page
+			From:        from,
+			To:          to,
+		},
+	}
+
+	return result, nil
+}
+
+// Async query methods
+func (qb *Builder) GetAsync(ctx context.Context) <-chan types.AsyncResult {
+	resultChan := make(chan types.AsyncResult, 1)
+	
+	go func() {
+		defer close(resultChan)
+		data, err := qb.Get(ctx)
+		resultChan <- types.AsyncResult{Data: data, Error: err}
+	}()
+	
+	return resultChan
+}
+
+func (qb *Builder) CountAsync(ctx context.Context) <-chan types.AsyncCountResult {
+	resultChan := make(chan types.AsyncCountResult, 1)
+	
+	go func() {
+		defer close(resultChan)
+		count, err := qb.Count(ctx)
+		resultChan <- types.AsyncCountResult{Count: count, Error: err}
+	}()
+	
+	return resultChan
+}
+
+func (qb *Builder) PaginateAsync(ctx context.Context, page int, perPage int) <-chan types.AsyncPaginationResult {
+	resultChan := make(chan types.AsyncPaginationResult, 1)
+	
+	go func() {
+		defer close(resultChan)
+		result, err := qb.Paginate(ctx, page, perPage)
+		resultChan <- types.AsyncPaginationResult{Result: result, Error: err}
+	}()
+	
+	return resultChan
+}
+
 func (qb *Builder) Sum(ctx context.Context, column string) (interface{}, error) {
 	return qb.executor_.Sum(ctx, qb, column)
 }

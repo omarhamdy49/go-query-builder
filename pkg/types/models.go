@@ -21,13 +21,60 @@ type Config struct {
 }
 
 type PaginationResult struct {
-	Data        Collection `json:"data"`
-	Total       int64      `json:"total"`
-	PerPage     int        `json:"per_page"`
-	CurrentPage int        `json:"current_page"`
-	LastPage    int        `json:"last_page"`
-	From        int        `json:"from"`
-	To          int        `json:"to"`
+	Data Collection    `json:"data"`
+	Meta PaginationMeta `json:"meta"`
+}
+
+type PaginationMeta struct {
+	CurrentPage int   `json:"current_page"`
+	NextPage    *int  `json:"next_page"`
+	PerPage     int   `json:"per_page"`
+	Total       int64 `json:"total"`
+	LastPage    int   `json:"last_page"`
+	From        int   `json:"from"`
+	To          int   `json:"to"`
+}
+
+// Helper methods for PaginationResult
+func (p PaginationResult) HasMorePages() bool {
+	return p.Meta.NextPage != nil
+}
+
+func (p PaginationResult) IsEmpty() bool {
+	return p.Meta.Total == 0
+}
+
+func (p PaginationResult) Count() int {
+	return p.Data.Count()
+}
+
+func (p PaginationResult) OnFirstPage() bool {
+	return p.Meta.CurrentPage == 1
+}
+
+func (p PaginationResult) OnLastPage() bool {
+	return p.Meta.CurrentPage == p.Meta.LastPage
+}
+
+func (p PaginationResult) GetNextPageNumber() *int {
+	return p.Meta.NextPage
+}
+
+func (p PaginationResult) GetPreviousPageNumber() *int {
+	if p.Meta.CurrentPage > 1 {
+		prev := p.Meta.CurrentPage - 1
+		return &prev
+	}
+	return nil
+}
+
+// Query optimization configuration
+type QueryOptimization struct {
+	EnableQueryCache    bool          `json:"enable_query_cache"`
+	CacheTTL           time.Duration `json:"cache_ttl"`
+	EnablePreparedStmt bool          `json:"enable_prepared_stmt"`
+	MaxConcurrency     int           `json:"max_concurrency"`
+	EnableQueryLog     bool          `json:"enable_query_log"`
 }
 
 type AggregateResult struct {

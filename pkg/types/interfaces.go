@@ -3,7 +3,6 @@ package types
 import (
 	"context"
 	"database/sql/driver"
-	"time"
 )
 
 type QueryExecutor interface {
@@ -76,6 +75,41 @@ type QueryBuilder interface {
 	WhereNotNull(column string) QueryBuilder
 	WhereExists(query QueryBuilder) QueryBuilder
 	WhereNotExists(query QueryBuilder) QueryBuilder
+	WhereDate(column string, args ...interface{}) QueryBuilder
+	OrWhereDate(column string, args ...interface{}) QueryBuilder
+	WhereTime(column string, args ...interface{}) QueryBuilder
+	OrWhereTime(column string, args ...interface{}) QueryBuilder
+	WhereDay(column string, args ...interface{}) QueryBuilder
+	OrWhereDay(column string, args ...interface{}) QueryBuilder
+	WhereMonth(column string, args ...interface{}) QueryBuilder
+	OrWhereMonth(column string, args ...interface{}) QueryBuilder
+	WhereYear(column string, args ...interface{}) QueryBuilder
+	OrWhereYear(column string, args ...interface{}) QueryBuilder
+	WherePast(column string) QueryBuilder
+	WhereFuture(column string) QueryBuilder
+	WhereNowOrPast(column string) QueryBuilder
+	WhereNowOrFuture(column string) QueryBuilder
+	WhereToday(column string) QueryBuilder
+	WhereBeforeToday(column string) QueryBuilder
+	WhereAfterToday(column string) QueryBuilder
+	WhereTodayOrBefore(column string) QueryBuilder
+	WhereTodayOrAfter(column string) QueryBuilder
+	WhereJsonContains(column string, value interface{}) QueryBuilder
+	OrWhereJsonContains(column string, value interface{}) QueryBuilder
+	WhereJsonLength(column string, args ...interface{}) QueryBuilder
+	OrWhereJsonLength(column string, args ...interface{}) QueryBuilder
+	WhereJsonPath(column, path string, args ...interface{}) QueryBuilder
+	OrWhereJsonPath(column, path string, args ...interface{}) QueryBuilder
+	WhereFullText(columns []string, value string) QueryBuilder
+	OrWhereFullText(columns []string, value string) QueryBuilder
+	WhereAny(columns []string, args ...interface{}) QueryBuilder
+	OrWhereAny(columns []string, args ...interface{}) QueryBuilder
+	WhereAll(columns []string, args ...interface{}) QueryBuilder
+	OrWhereAll(columns []string, args ...interface{}) QueryBuilder
+	WhereNone(columns []string, args ...interface{}) QueryBuilder
+	OrWhereNone(columns []string, args ...interface{}) QueryBuilder
+	WhereColumn(first, second string, args ...interface{}) QueryBuilder
+	OrWhereColumn(first, second string, args ...interface{}) QueryBuilder
 	Join(table, first string, args ...interface{}) QueryBuilder
 	LeftJoin(table, first string, args ...interface{}) QueryBuilder
 	RightJoin(table, first string, args ...interface{}) QueryBuilder
@@ -116,6 +150,12 @@ type QueryBuilder interface {
 	InsertBatch(ctx context.Context, values []map[string]interface{}) error
 	Update(ctx context.Context, values map[string]interface{}) (int64, error)
 	Delete(ctx context.Context) (int64, error)
+	Paginate(ctx context.Context, page int, perPage int) (PaginationResult, error)
+	SimplePaginate(ctx context.Context, page int, perPage int) (PaginationResult, error)
+	// Async methods
+	GetAsync(ctx context.Context) <-chan AsyncResult
+	CountAsync(ctx context.Context) <-chan AsyncCountResult
+	PaginateAsync(ctx context.Context, page int, perPage int) <-chan AsyncPaginationResult
 	Clone() QueryBuilder
 }
 
@@ -124,12 +164,28 @@ type ScopeFunc func(QueryBuilder) QueryBuilder
 type ChunkFunc func(Collection) error
 type LazyFunc func(map[string]interface{}) error
 
+// Async result types
+type AsyncResult struct {
+	Data  Collection
+	Error error
+}
+
+type AsyncCountResult struct {
+	Count int64
+	Error error
+}
+
+type AsyncPaginationResult struct {
+	Result PaginationResult
+	Error  error
+}
+
 type JSONValue struct {
-	Value interface{}
+	Val interface{}
 }
 
 func (j JSONValue) Value() (driver.Value, error) {
-	return j.Value, nil
+	return j.Val, nil
 }
 
 type Collection interface {

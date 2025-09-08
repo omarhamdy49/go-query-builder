@@ -83,7 +83,7 @@ func TestSelectDistinct(t *testing.T) {
 	qb.table = "users"
 
 	qb.Select("name").Distinct()
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -168,7 +168,7 @@ func TestJoinQuery(t *testing.T) {
 	qb.Select("users.name", "profiles.bio").
 		Join("profiles", "users.id", "profiles.user_id")
 	
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -185,7 +185,7 @@ func TestLeftJoin(t *testing.T) {
 	qb.table = "users"
 
 	qb.LeftJoin("posts", "users.id", "posts.author_id")
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -202,7 +202,7 @@ func TestOrderBy(t *testing.T) {
 	qb.table = "users"
 
 	qb.OrderBy("name").OrderByDesc("created_at")
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -219,7 +219,7 @@ func TestGroupBy(t *testing.T) {
 	qb.table = "orders"
 
 	qb.Select("status").GroupBy("status")
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -258,7 +258,7 @@ func TestLimitOffset(t *testing.T) {
 	qb.table = "users"
 
 	qb.Limit(10).Offset(20)
-	sql, bindings, err := qb.ToSQL()
+	sql, _, err := qb.ToSQL()
 	if err != nil {
 		t.Fatalf("Expected no error, got %v", err)
 	}
@@ -350,7 +350,7 @@ func TestConditionalQueries(t *testing.T) {
 	condition := true
 	finalQB := qb.When(condition, func(q types.QueryBuilder) types.QueryBuilder {
 		return q.Where("status", "active")
-	}).Unless(!condition, func(q types.QueryBuilder) types.QueryBuilder {
+	}).Unless(condition, func(q types.QueryBuilder) types.QueryBuilder {
 		return q.Where("deleted_at", "IS NULL")
 	})
 

@@ -3,7 +3,6 @@ package execution
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/go-query-builder/querybuilder/pkg/types"
 )

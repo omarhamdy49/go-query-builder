@@ -7,9 +7,10 @@ import (
 	"time"
 
 	"github.com/go-query-builder/querybuilder"
+	"github.com/go-query-builder/querybuilder/pkg/types"
 )
 
-func main() {
+func mainBasic() {
 	ctx := context.Background()
 
 	config := querybuilder.Config{
@@ -38,7 +39,7 @@ func main() {
 	deleteExamples(ctx, db)
 }
 
-func basicSelects(ctx context.Context, db querybuilder.DB) {
+func basicSelects(ctx context.Context, db types.DB) {
 	fmt.Println("=== Basic SELECT Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -65,7 +66,7 @@ func basicSelects(ctx context.Context, db querybuilder.DB) {
 	}
 }
 
-func whereClauseExamples(ctx context.Context, db querybuilder.DB) {
+func whereClauseExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== WHERE Clause Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -108,7 +109,7 @@ func whereClauseExamples(ctx context.Context, db querybuilder.DB) {
 	fmt.Printf("Found %d non-deleted users\n", collection.Count())
 }
 
-func joinExamples(ctx context.Context, db querybuilder.DB) {
+func joinExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== JOIN Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -133,7 +134,7 @@ func joinExamples(ctx context.Context, db querybuilder.DB) {
 	fmt.Printf("Found %d user-post combinations\n", collection.Count())
 }
 
-func aggregateExamples(ctx context.Context, db querybuilder.DB) {
+func aggregateExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== Aggregate Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -160,7 +161,7 @@ func aggregateExamples(ctx context.Context, db querybuilder.DB) {
 	}
 }
 
-func insertExamples(ctx context.Context, db querybuilder.DB) {
+func insertExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== INSERT Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -200,7 +201,7 @@ func insertExamples(ctx context.Context, db querybuilder.DB) {
 	}
 }
 
-func updateExamples(ctx context.Context, db querybuilder.DB) {
+func updateExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== UPDATE Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")
@@ -226,7 +227,7 @@ func updateExamples(ctx context.Context, db querybuilder.DB) {
 	}
 }
 
-func deleteExamples(ctx context.Context, db querybuilder.DB) {
+func deleteExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== DELETE Examples ===")
 
 	qb := querybuilder.Table(db, db.Driver(), "users")

@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strconv"
 
 	"github.com/go-query-builder/querybuilder/pkg/types"
 )
@@ -86,7 +87,40 @@ func (e *QueryExecutor) Pluck(ctx context.Context, qb QueryBuilderInterface, col
 }
 
 func (e *QueryExecutor) Count(ctx context.Context, qb QueryBuilderInterface) (int64, error) {
-	return e.aggregate(ctx, qb, types.Count, "*")
+	result, err := e.aggregate(ctx, qb, types.Count, "*")
+	if err != nil {
+		return 0, err
+	}
+	
+	if count, ok := result.(int64); ok {
+		return count, nil
+	}
+	
+	// Handle different numeric types that might be returned
+	switch v := result.(type) {
+	case int:
+		return int64(v), nil
+	case int32:
+		return int64(v), nil
+	case float64:
+		return int64(v), nil
+	case []uint8:
+		// MySQL driver sometimes returns numbers as byte slices
+		if str := string(v); str != "" {
+			if count, err := strconv.ParseInt(str, 10, 64); err == nil {
+				return count, nil
+			}
+		}
+		return 0, fmt.Errorf("failed to parse count from byte slice: %s", string(v))
+	case string:
+		// Handle string representations
+		if count, err := strconv.ParseInt(v, 10, 64); err == nil {
+			return count, nil
+		}
+		return 0, fmt.Errorf("failed to parse count from string: %s", v)
+	default:
+		return 0, fmt.Errorf("unexpected count result type: %T", result)
+	}
 }
 
 func (e *QueryExecutor) Sum(ctx context.Context, qb QueryBuilderInterface, column string) (interface{}, error) {

@@ -1,3 +1,7 @@
+// Package pagination provides utilities for paginating database query results.
+// It includes support for Laravel-style pagination with data and meta structures,
+// simple pagination for performance optimization, and cursor-based pagination
+// for large datasets.
 package pagination
 
 import (
@@ -20,7 +24,7 @@ func NewPaginator(executor types.QueryExecutor, driver types.Driver) *Paginator 
 }
 
 type QueryBuilderInterface interface {
-	ToSQL() (string, []interface{}, error)
+	ToSQL() (string, []any, error)
 	Clone() types.QueryBuilder
 	GetTable() string
 	Limit(int) types.QueryBuilder
@@ -58,18 +62,27 @@ func (p *Paginator) Paginate(ctx context.Context, qb QueryBuilderInterface, page
 		to = 0
 	}
 
+	var nextPage *int
+	if page < lastPage {
+		next := page + 1
+		nextPage = &next
+	}
+
 	return &types.PaginationResult{
-		Data:        data,
-		Total:       total,
-		PerPage:     perPage,
-		CurrentPage: page,
-		LastPage:    lastPage,
-		From:        from,
-		To:          to,
+		Data: data,
+		Meta: types.PaginationMeta{
+			CurrentPage: page,
+			NextPage:    nextPage,
+			PerPage:     perPage,
+			Total:       total,
+			LastPage:    lastPage,
+			From:        from,
+			To:          to,
+		},
 	}, nil
 }
 
-func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*SimplePaginationResult, error) {
+func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*types.PaginationResult, error) {
 	if page < 1 {
 		page = 1
 	}
@@ -99,13 +112,23 @@ func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface
 		to = 0
 	}
 
-	return &SimplePaginationResult{
-		Data:        data,
-		PerPage:     perPage,
-		CurrentPage: page,
-		From:        from,
-		To:          to,
-		HasMore:     hasMore,
+	var nextPage *int
+	if hasMore {
+		next := page + 1
+		nextPage = &next
+	}
+
+	return &types.PaginationResult{
+		Data: data,
+		Meta: types.PaginationMeta{
+			CurrentPage: page,
+			NextPage:    nextPage,
+			PerPage:     perPage,
+			Total:       -1, // Unknown for simple pagination
+			LastPage:    -1, // Unknown for simple pagination
+			From:        from,
+			To:          to,
+		},
 	}, nil
 }
 
@@ -191,11 +214,11 @@ func (p *Paginator) scanRows(rows types.Rows) (types.Collection, error) {
 		return nil, err
 	}
 
-	var results []map[string]interface{}
+	var results []map[string]any
 	
 	for rows.Next() {
-		values := make([]interface{}, len(columns))
-		valuePtrs := make([]interface{}, len(columns))
+		values := make([]any, len(columns))
+		valuePtrs := make([]any, len(columns))
 		
 		for i := range columns {
 			valuePtrs[i] = &values[i]
@@ -205,7 +228,7 @@ func (p *Paginator) scanRows(rows types.Rows) (types.Collection, error) {
 			return nil, err
 		}
 
-		row := make(map[string]interface{})
+		row := make(map[string]any)
 		for i, col := range columns {
 			val := values[i]
 			if b, ok := val.([]byte); ok {

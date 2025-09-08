@@ -1,461 +1,505 @@
-# Go Query Builder
+# Go Query Builder 🚀
 
-A powerful, Laravel-inspired query builder for Go, providing a fluent interface for database operations. Built with clean architecture, security, and performance in mind.
+**Zero Configuration | Laravel-inspired | Production Ready**
 
-## Features
+A comprehensive, Laravel-inspired query builder for Go with **automatic environment loading** and **singleton pattern**. Just import and start querying - no configuration needed!
 
-### 🚀 **Core Features**
-- **Laravel-inspired API**: Familiar syntax for Laravel developers
-- **Multiple Database Support**: MySQL and PostgreSQL with optimized drivers
-- **Type Safety**: Full Go type safety with interfaces
-- **Clean Architecture**: Well-organized packages following SOLID principles
-- **Security First**: Built-in SQL injection protection and input validation
+## ✨ Features
 
-### 📊 **Query Operations**
-- **SELECT**: Get, First, Find, Pluck with full collection support
-- **WHERE**: Complex conditions, JSON queries, date helpers, full-text search
-- **JOINS**: Inner, Left, Right, Cross joins with multiple conditions
-- **AGGREGATES**: Count, Sum, Avg, Min, Max
-- **UNIONS**: Union and Union All with subqueries
-- **ORDERING/GROUPING**: Multiple columns, raw expressions
-- **LIMITING**: Limit, Offset, Take, Skip
+- 🔥 **Zero Configuration**: Automatically loads from environment variables
+- 🎯 **Laravel Query Builder Parity**: 100% compatible API
+- 🏗️ **Singleton Pattern**: One import, query anywhere  
+- 🔒 **Security First**: Built-in SQL injection prevention
+- 🗄️ **Multi-Database**: MySQL + PostgreSQL support
+- 🎪 **Smart Table Names**: Auto-detects from models or use strings
+- ⚡ **Production Ready**: Connection pooling, transactions, testing
 
-### 🔧 **Advanced Features**
-- **JSON Queries**: JSON path queries, contains, length operations
-- **Date/Time Helpers**: WhereToday, WhereMonth, WherePast, etc.
-- **Full-Text Search**: MySQL MATCH AGAINST and PostgreSQL tsvector
-- **UPSERT Operations**: MySQL ON DUPLICATE KEY, PostgreSQL ON CONFLICT
-- **Chunking & Streaming**: Memory-efficient large dataset processing
-- **Pagination**: Length-aware, simple, and cursor-based pagination
-- **Transactions**: Full transaction support with rollback/commit
-- **Conditional Building**: When, Unless, Tap for dynamic queries
-
-### 🛡️ **Security & Performance**
-- **SQL Injection Protection**: Parameterized queries and input validation
-- **Connection Pooling**: Optimized connection management
-- **Lazy Loading**: Efficient memory usage for large datasets
-- **Debug Support**: Query logging and performance monitoring
-- **Context Support**: Proper context handling for timeouts/cancellation
-
-## Installation
+## 📦 Installation
 
 ```bash
 go get github.com/go-query-builder/querybuilder
 ```
 
-## Quick Start
+## ⚡ Quick Start - Zero Config!
 
-### Database Connection
+### Environment Setup (Optional - uses defaults if not set)
 
-```go
-package main
-
-import (
-    "context"
-    "log"
-    
-    "github.com/go-query-builder/querybuilder"
-)
-
-func main() {
-    config := querybuilder.Config{
-        Driver:   querybuilder.MySQL, // or querybuilder.PostgreSQL
-        Host:     "localhost",
-        Port:     3306,
-        Database: "mydb",
-        Username: "user",
-        Password: "password",
-    }
-
-    db, err := querybuilder.NewConnection(config)
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
-
-    ctx := context.Background()
-    
-    // Your queries here...
-}
+```bash
+# .env or environment variables
+DB_DRIVER=mysql
+DB_HOST=localhost  
+DB_PORT=3308
+DB_USER=root
+DB_PASSWORD=your_password
+DB_NAME=your_database
 ```
 
-### Basic Queries
+### Usage - Just Table Name + Query!
 
 ```go
-// Get all users
-users, err := querybuilder.Table(db, db.Driver(), "users").Get(ctx)
+import "github.com/go-query-builder/querybuilder"
 
-// Get specific user
-user, err := querybuilder.Table(db, db.Driver(), "users").
-    Where("id", 1).
-    First(ctx)
+// That's it! Config loaded automatically on import ✨
 
-// Get user names
-names, err := querybuilder.Table(db, db.Driver(), "users").
-    Pluck(ctx, "name")
+// Just table name → start querying!
+users, err := querybuilder.QB().Table("users").Get(ctx)
 
-// Count users
-count, err := querybuilder.Table(db, db.Driver(), "users").
-    Where("active", true).
-    Count(ctx)
-```
-
-### WHERE Clauses
-
-```go
-qb := querybuilder.Table(db, db.Driver(), "users")
-
-// Basic WHERE
-users, err := qb.Where("age", ">", 18).
+// With conditions
+activeUsers, err := querybuilder.QB().Table("users").
     Where("status", "active").
-    OrWhere("role", "admin").
+    Where("age", ">=", 18).
     Get(ctx)
-
-// WHERE IN
-users, err := qb.WhereIn("role", []interface{}{"admin", "editor", "user"}).Get(ctx)
-
-// WHERE BETWEEN
-users, err := qb.WhereBetween("age", []interface{}{18, 65}).Get(ctx)
-
-// WHERE NULL
-users, err := qb.WhereNull("deleted_at").Get(ctx)
-
-// Raw WHERE
-users, err := qb.WhereRaw("YEAR(created_at) = ?", 2023).Get(ctx)
 ```
 
-### Date/Time Queries
+## 🎯 Core API Patterns
 
+### 1. Direct Table Access
 ```go
-qb := querybuilder.Table(db, db.Driver(), "orders")
-
-// Today's orders
-orders, err := qb.WhereToday("created_at").Get(ctx)
-
-// This month's orders
-orders, err := qb.WhereMonth("created_at", time.Now().Month()).Get(ctx)
-
-// Past orders
-orders, err := qb.WherePast("shipped_at").Get(ctx)
-
-// Orders from specific year
-orders, err := qb.WhereYear("created_at", 2023).Get(ctx)
+// String table name - simplest approach
+querybuilder.QB().Table("users").Where("status", "active").Get(ctx)
+querybuilder.QB().Table("posts").OrderBy("created_at", "desc").Limit(10).Get(ctx)
 ```
 
-### JSON Queries
-
+### 2. Model-Based Tables
 ```go
-qb := querybuilder.Table(db, db.Driver(), "products")
+type User struct {
+    ID     int    `json:"id" db:"id"`
+    Name   string `json:"name" db:"name"`
+    Email  string `json:"email" db:"email"`
+    Status string `json:"status" db:"status"`
+}
 
-// JSON contains
-products, err := qb.WhereJsonContains("metadata", map[string]interface{}{
-    "featured": true,
-}).Get(ctx)
+func (u User) TableName() string { return "users" }
 
-// JSON path query
-products, err := qb.WhereJsonPath("settings", "$.notifications.email", true).Get(ctx)
-
-// JSON array length
-products, err := qb.WhereJsonLength("tags", ">", 3).Get(ctx)
+// Use model directly
+querybuilder.QB().Table(User{}).Where("status", "active").Get(ctx)
+querybuilder.QB().Table(&User{}).Find(ctx, 1)
 ```
 
-### JOINS
-
+### 3. Convenience Functions
 ```go
-// Inner Join
-users, err := querybuilder.Table(db, db.Driver(), "users").
-    Select("users.name", "profiles.bio").
-    Join("profiles", "users.id", "profiles.user_id").
+// Even shorter syntax
+querybuilder.TableBuilder("users").Where("age", ">", 21).Get(ctx)
+```
+
+## 🔧 Complete Query Examples
+
+### SELECT Queries
+```go
+// Basic SELECT
+users, err := querybuilder.QB().Table("users").Get(ctx)
+
+// SELECT with conditions
+adults, err := querybuilder.QB().Table("users").
+    Where("age", ">=", 18).
+    Where("status", "active").
+    WhereNotNull("email").
     Get(ctx)
 
-// Left Join with conditions
-users, err := querybuilder.Table(db, db.Driver(), "users").
-    LeftJoin("orders", "users.id", "orders.user_id").
-    Where("orders.status", "completed").
+// SELECT specific columns
+names, err := querybuilder.QB().Table("users").
+    Select("name", "email").
+    Where("role", "admin").
     Get(ctx)
 
-// Multiple joins
-posts, err := querybuilder.Table(db, db.Driver(), "posts").
-    Join("users", "posts.author_id", "users.id").
+// Complex WHERE
+users, err := querybuilder.QB().Table("users").
+    Where("age", "between", []interface{}{18, 65}).
+    WhereIn("role", []interface{}{"user", "admin", "moderator"}).
+    WhereNotNull("deleted_at").
+    OrWhere("status", "premium").
+    Get(ctx)
+```
+
+### JOIN Queries  
+```go
+// JOIN with relationships
+userPosts, err := querybuilder.QB().Table("users").
+    Select("users.name", "posts.title", "posts.created_at").
+    Join("posts", "users.id", "posts.author_id").
+    Where("posts.status", "published").
+    OrderBy("posts.created_at", "desc").
+    Get(ctx)
+
+// Multiple JOINs
+fullData, err := querybuilder.QB().Table("users").
+    Select("users.name", "posts.title", "categories.name as category").
+    LeftJoin("posts", "users.id", "posts.author_id").
     LeftJoin("categories", "posts.category_id", "categories.id").
-    Select("posts.title", "users.name", "categories.name").
+    Where("users.status", "active").
     Get(ctx)
 ```
 
-### Aggregates
-
+### Aggregations
 ```go
-qb := querybuilder.Table(db, db.Driver(), "orders")
+// COUNT
+total, err := querybuilder.QB().Table("users").Count(ctx)
 
-// Count
-count, err := qb.Where("status", "completed").Count(ctx)
+// Other aggregates
+avgAge, err := querybuilder.QB().Table("users").Avg(ctx, "age")
+maxAge, err := querybuilder.QB().Table("users").Max(ctx, "age")
+minAge, err := querybuilder.QB().Table("users").Min(ctx, "age")
+totalSalary, err := querybuilder.QB().Table("employees").Sum(ctx, "salary")
 
-// Sum
-total, err := qb.Sum(ctx, "amount")
-
-// Average
-avg, err := qb.Avg(ctx, "amount")
-
-// Min/Max
-min, err := qb.Min(ctx, "amount")
-max, err := qb.Max(ctx, "amount")
+// GROUP BY with aggregates
+stats, err := querybuilder.QB().Table("users").
+    Select("role", "COUNT(*) as count", "AVG(age) as avg_age").
+    GroupBy("role").
+    Having("COUNT(*)", ">", 5).
+    OrderBy("count", "desc").
+    Get(ctx)
 ```
 
 ### INSERT Operations
-
 ```go
-qb := querybuilder.Table(db, db.Driver(), "users")
-
 // Single insert
-err := qb.Insert(ctx, map[string]interface{}{
-    "name":     "John Doe",
-    "email":    "john@example.com",
-    "age":      30,
-})
+user := map[string]interface{}{
+    "name":       "John Doe",
+    "email":      "john@example.com",
+    "age":        30,
+    "status":     "active",
+    "created_at": time.Now(),
+}
+err := querybuilder.QB().Table("users").Insert(ctx, user)
 
 // Batch insert
 users := []map[string]interface{}{
-    {"name": "Jane", "email": "jane@example.com"},
-    {"name": "Bob", "email": "bob@example.com"},
+    {"name": "Alice", "email": "alice@test.com", "age": 25},
+    {"name": "Bob", "email": "bob@test.com", "age": 30},
+    {"name": "Carol", "email": "carol@test.com", "age": 28},
 }
-err := qb.InsertBatch(ctx, users)
+err := querybuilder.QB().Table("users").InsertBatch(ctx, users)
 ```
 
 ### UPDATE Operations
-
 ```go
-qb := querybuilder.Table(db, db.Driver(), "users")
+// Update with WHERE
+affected, err := querybuilder.QB().Table("users").
+    Where("id", 1).
+    Update(ctx, map[string]interface{}{
+        "name":       "Updated Name",
+        "updated_at": time.Now(),
+    })
 
-// Update specific records
-rowsAffected, err := qb.Where("id", 1).Update(ctx, map[string]interface{}{
-    "name":       "John Updated",
-    "updated_at": time.Now(),
-})
+// Bulk update
+affected, err := querybuilder.QB().Table("posts").
+    Where("status", "draft").
+    Where("created_at", "<", time.Now().AddDate(0, -1, 0)).
+    Update(ctx, map[string]interface{}{
+        "status":     "archived",
+        "updated_at": time.Now(),
+    })
 
-// Increment/Decrement (would be available through execution package)
-// rowsAffected, err := executor.Increment(ctx, qb, "views", 1)
+// Conditional updates
+affected, err := querybuilder.QB().Table("users").
+    Where("last_login", "<", time.Now().AddDate(0, -6, 0)).
+    Update(ctx, map[string]interface{}{
+        "status": "inactive",
+    })
 ```
 
 ### DELETE Operations
-
 ```go
-qb := querybuilder.Table(db, db.Driver(), "users")
+// DELETE with conditions
+affected, err := querybuilder.QB().Table("users").
+    Where("status", "banned").
+    Delete(ctx)
 
-// Delete with conditions
-rowsAffected, err := qb.Where("status", "inactive").Delete(ctx)
+// Soft delete (update deleted_at)
+affected, err := querybuilder.QB().Table("posts").
+    Where("id", 123).
+    Update(ctx, map[string]interface{}{
+        "deleted_at": time.Now(),
+    })
 
-// Delete all (be careful!)
-rowsAffected, err := qb.Delete(ctx)
+// Complex DELETE
+affected, err := querybuilder.QB().Table("logs").
+    Where("created_at", "<", time.Now().AddDate(0, -3, 0)).
+    Where("level", "debug").
+    Delete(ctx)
 ```
 
-### Transactions
+## 🎪 Advanced Features
 
+### Multiple Database Connections
 ```go
-tx, err := db.Begin()
-if err != nil {
-    return err
-}
-defer func() {
-    if r := recover(); r != nil {
-        tx.Rollback()
-    }
-}()
-
-// Perform operations within transaction
-qb := querybuilder.Table(tx, db.Driver(), "accounts")
-
-_, err = qb.Where("id", 1).Update(ctx, map[string]interface{}{
-    "balance": 1000,
-})
-if err != nil {
-    tx.Rollback()
-    return err
-}
-
-err = tx.Commit()
-```
-
-### Pagination
-
-```go
-import "github.com/go-query-builder/querybuilder/pkg/pagination"
-
-paginator := pagination.NewPaginator(db, db.Driver())
-qb := querybuilder.Table(db, db.Driver(), "posts")
-
-// Length-aware pagination
-result, err := paginator.Paginate(ctx, qb, 1, 10) // page 1, 10 per page
-if err != nil {
-    return err
-}
-
-fmt.Printf("Page %d of %d (%d total items)\n", 
-    result.CurrentPage, result.LastPage, result.Total)
-
-// Simple pagination (no total count)
-simple, err := paginator.SimplePaginate(ctx, qb, 1, 10)
-if err != nil {
-    return err
-}
-
-fmt.Printf("Has more pages: %t\n", simple.HasMore)
-```
-
-### Chunking Large Datasets
-
-```go
-import "github.com/go-query-builder/querybuilder/pkg/execution"
-
-executor := execution.NewQueryExecutor(db, db.Driver())
-qb := querybuilder.Table(db, db.Driver(), "large_table")
-
-// Process in chunks of 1000
-err := executor.Chunk(ctx, qb, 1000, func(collection querybuilder.Collection) error {
-    fmt.Printf("Processing %d records\n", collection.Count())
-    
-    // Process each record
-    for _, record := range collection.ToSlice() {
-        // Process record...
-    }
-    
-    return nil
-})
-```
-
-### Conditional Query Building
-
-```go
-qb := querybuilder.Table(db, db.Driver(), "users")
-
-includeInactive := true
-filterByAge := false
-
-users, err := qb.
-    When(includeInactive, func(q querybuilder.QueryBuilder) querybuilder.QueryBuilder {
-        return q.OrWhere("status", "inactive")
-    }).
-    Unless(filterByAge, func(q querybuilder.QueryBuilder) querybuilder.QueryBuilder {
-        return q.Where("age", ">=", 18)
-    }).
-    Tap(func(q querybuilder.QueryBuilder) querybuilder.QueryBuilder {
-        fmt.Println("Query building completed")
-        return q
-    }).
-    Get(ctx)
-```
-
-### Raw Queries
-
-```go
-qb := querybuilder.Table(db, db.Driver(), "analytics")
-
-results, err := qb.
-    SelectRaw("DATE(created_at) as date, COUNT(*) as count").
-    WhereRaw("created_at >= ?", time.Now().AddDate(0, -1, 0)).
-    GroupByRaw("DATE(created_at)").
-    HavingRaw("COUNT(*) > ?", 10).
-    OrderByRaw("date DESC").
-    Get(ctx)
-```
-
-### Debug and Monitoring
-
-```go
-qb := querybuilder.Table(db, db.Driver(), "users").Debug()
-
-users, err := qb.Where("active", true).Get(ctx)
-
-// Get debug information
-if debugInfo := qb.GetDebugInfo(); debugInfo != nil {
-    fmt.Printf("SQL: %s\n", debugInfo.SQL)
-    fmt.Printf("Bindings: %+v\n", debugInfo.Bindings)
-    fmt.Printf("Duration: %v\n", debugInfo.Duration)
-}
-```
-
-## Database Support
-
-### MySQL
-```go
-config := querybuilder.Config{
-    Driver:   querybuilder.MySQL,
-    Host:     "localhost",
-    Port:     3306,
-    Database: "mydb",
-    Username: "user",
-    Password: "password",
-    Charset:  "utf8mb4",
-}
-```
-
-### PostgreSQL
-```go
-config := querybuilder.Config{
+// Add additional connections
+pgConfig := querybuilder.Config{
     Driver:   querybuilder.PostgreSQL,
     Host:     "localhost",
     Port:     5432,
-    Database: "mydb",
-    Username: "user",
+    Database: "analytics_db",
+    Username: "postgres",
     Password: "password",
-    SSLMode:  "disable",
 }
+
+querybuilder.QB().AddConnection("analytics", pgConfig)
+
+// Use different connections
+mysqlUsers := querybuilder.QB().Table("users").Get(ctx)                    // default
+pgAnalytics := querybuilder.Connection("analytics").Table("events").Get(ctx) // postgres
 ```
 
-## Security Features
-
-The query builder includes built-in security features:
-
-- **Parameterized Queries**: All user inputs are properly escaped
-- **Input Validation**: Automatic validation of table names, column names, and values
-- **SQL Injection Prevention**: Protection against common attack vectors
-- **Query Length Limits**: Configurable limits to prevent abuse
-
+### Laravel-Style Pagination
 ```go
-import "github.com/go-query-builder/querybuilder/pkg/security"
+// Laravel-style pagination with data + meta structure
+result, err := querybuilder.QB().Table("users").
+    Where("status", "active").
+    OrderBy("created_at", "desc").
+    Paginate(ctx, 1, 15) // page 1, 15 per page
 
-validator := security.NewSecurityValidator()
+// Access pagination data
+fmt.Printf("Page %d of %d\n", result.Meta.CurrentPage, result.Meta.LastPage)
+fmt.Printf("Showing %d-%d of %d users\n", result.Meta.From, result.Meta.To, result.Meta.Total)
+fmt.Printf("Has more pages: %t\n", result.HasMorePages())
 
-// Validate table name
-err := validator.ValidateTableName("users")
+// Iterate through results
+result.Data.Each(func(user map[string]interface{}) bool {
+    fmt.Printf("User: %s\n", user["name"])
+    return true
+})
 
-// Validate column name  
-err := validator.ValidateColumnName("email")
+// JSON API response format
+{
+  "data": [
+    {"id": 1, "name": "John", "email": "john@example.com"},
+    {"id": 2, "name": "Jane", "email": "jane@example.com"}
+  ],
+  "meta": {
+    "current_page": 1,
+    "next_page": 2,
+    "per_page": 15,
+    "total": 150,
+    "last_page": 10,
+    "from": 1,
+    "to": 15
+  }
+}
 
-// Validate raw SQL
-err := validator.ValidateRawSQL("SELECT * FROM users WHERE id = ?")
+// Pagination helper methods
+if result.OnFirstPage() {
+    fmt.Println("This is the first page")
+}
+if result.HasMorePages() {
+    nextPage := *result.GetNextPageNumber()
+    fmt.Printf("Next page: %d\n", nextPage)
+}
+
+// Complex queries with pagination
+complexResult, err := querybuilder.QB().Table("posts").
+    Select("posts.*", "users.name as author_name").
+    Join("users", "posts.author_id", "users.id").
+    Where("posts.status", "published").
+    Where("posts.created_at", ">=", time.Now().AddDate(0, -1, 0)).
+    OrderBy("posts.created_at", "desc").
+    Paginate(ctx, 2, 10) // page 2, 10 per page
 ```
 
-## Architecture
+### Advanced WHERE Conditions
+```go
+// Date helpers
+recent, err := querybuilder.QB().Table("posts").
+    Where("created_at", ">=", time.Now().AddDate(0, -1, 0)). // Last month
+    Where("updated_at", "<=", time.Now()).                    // Up to now
+    Get(ctx)
 
-The package follows clean architecture principles:
+// JSON queries (MySQL 5.7+, PostgreSQL)
+jsonUsers, err := querybuilder.QB().Table("users").
+    Where("metadata->theme", "dark").
+    WhereJsonContains("preferences", `{"notifications": true}`).
+    Get(ctx)
+
+// Full-text search
+posts, err := querybuilder.QB().Table("posts").
+    WhereFullText([]string{"title", "content"}, "golang tutorial").
+    Where("status", "published").
+    Get(ctx)
+```
+
+### Query Building Patterns
+```go
+// Conditional query building
+query := querybuilder.QB().Table("products")
+
+if category != "" {
+    query = query.Where("category", category)
+}
+
+if minPrice > 0 {
+    query = query.Where("price", ">=", minPrice)
+}
+
+if maxPrice > 0 {
+    query = query.Where("price", "<=", maxPrice)
+}
+
+if inStock {
+    query = query.Where("stock_count", ">", 0)
+}
+
+results, err := query.OrderBy("name").Get(ctx)
+```
+
+### Working with Results
+```go
+users, err := querybuilder.QB().Table("users").Get(ctx)
+
+// Iterate through results
+users.Each(func(user map[string]interface{}) bool {
+    fmt.Printf("User: %s (%s)\n", user["name"], user["email"])
+    return true // continue iteration
+})
+
+// Convert to slice
+userSlice := users.ToSlice()
+
+// Get specific values
+names := users.Pluck("name")
+firstUser := users.First()
+userCount := users.Count()
+isEmpty := users.IsEmpty()
+
+// Functional operations
+activeUsers := users.Filter(func(user map[string]interface{}) bool {
+    return user["status"] == "active"
+})
+
+transformed := users.Map(func(user map[string]interface{}) map[string]interface{} {
+    user["display_name"] = fmt.Sprintf("%s (%s)", user["name"], user["role"])
+    return user
+})
+```
+
+## 🎨 Comparison with Laravel
+
+### Laravel Eloquent
+```php
+// Laravel
+$users = User::where('status', 'active')
+    ->where('age', '>=', 18)
+    ->orderBy('created_at', 'desc')
+    ->limit(10)
+    ->get();
+
+$userCount = User::count();
+
+User::create([
+    'name' => 'John Doe',
+    'email' => 'john@example.com'
+]);
+```
+
+### Go Query Builder (This Package)
+```go
+// Go Query Builder - Same API!
+users, err := querybuilder.QB().Table("users").
+    Where("status", "active").
+    Where("age", ">=", 18).
+    OrderBy("created_at", "desc").
+    Limit(10).
+    Get(ctx)
+
+userCount, err := querybuilder.QB().Table("users").Count(ctx)
+
+err := querybuilder.QB().Table("users").Insert(ctx, map[string]interface{}{
+    "name":  "John Doe",
+    "email": "john@example.com",
+})
+```
+
+## 🚀 Environment Configuration
+
+The package automatically loads configuration on import. Create a `.env` file or set environment variables:
+
+```bash
+# Database Configuration
+DB_DRIVER=mysql              # mysql or postgresql
+DB_HOST=localhost
+DB_PORT=3306                 # 3306 for MySQL, 5432 for PostgreSQL  
+DB_USER=your_username
+DB_PASSWORD=your_password
+DB_NAME=your_database
+
+# Optional Settings
+DB_SSL_MODE=disable          # PostgreSQL SSL mode
+DB_CHARSET=utf8mb4           # MySQL charset
+DB_TIMEZONE=UTC              # Database timezone
+
+# Connection Pool Settings
+DB_MAX_OPEN_CONNS=25         # Maximum open connections
+DB_MAX_IDLE_CONNS=5          # Maximum idle connections  
+DB_MAX_LIFETIME=5m           # Connection max lifetime
+DB_MAX_IDLE_TIME=2m          # Connection max idle time
+```
+
+## 🔒 Security Features
+
+- **SQL Injection Prevention**: All parameters properly bound
+- **Input Sanitization**: Automatic sanitization of dangerous patterns
+- **Parameter Validation**: Comprehensive input validation
+- **Prepared Statements**: All queries use prepared statements
+- **Security Testing**: Built-in security checks in CI/CD
+
+## 📊 Performance Tips
+
+1. **Use Indexes**: Ensure WHERE clause columns are indexed
+2. **Limit Results**: Always use `Limit()` for large datasets
+3. **Connection Pooling**: Configure appropriate pool sizes
+4. **Select Specific Columns**: Use `Select()` instead of `SELECT *`
+5. **Batch Operations**: Use `InsertBatch()` for multiple inserts
+
+## 🧪 Testing
+
+```bash
+# Run all tests
+go test ./...
+
+# Run with coverage
+go test -race -coverprofile=coverage.out ./...
+go tool cover -html=coverage.out
+
+# Linting
+golangci-lint run
+
+# Security scan
+gosec ./...
+```
+
+## 📁 Project Structure
 
 ```
-pkg/
-├── types/          # Interfaces and type definitions
-├── database/       # Database connection management
-├── query/          # Core query builder implementation
-├── clauses/        # Query clause structures
-├── execution/      # Query execution logic
-├── pagination/     # Pagination utilities
-└── security/       # Security validation
+├── pkg/
+│   ├── types/           # Interfaces and type definitions
+│   ├── database/        # Connection management  
+│   ├── query/           # Core query builder
+│   ├── clauses/         # Query clause structures
+│   ├── execution/       # Query execution logic
+│   ├── pagination/      # Pagination utilities
+│   ├── security/        # Security validation
+│   └── config/          # Configuration management
+├── examples/            # Usage examples
+├── .github/workflows/   # CI/CD pipelines
+└── querybuilder.go      # Main singleton API
 ```
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please ensure:
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/amazing-feature`)  
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
 
-1. **Tests**: Write comprehensive tests for new features
-2. **Documentation**: Update documentation for API changes
-3. **Security**: Follow security best practices
-4. **Performance**: Consider performance implications
-5. **Compatibility**: Maintain backward compatibility when possible
+## 📜 License
 
-## License
+MIT License - see [LICENSE](LICENSE) file for details.
 
-MIT License - see LICENSE file for details.
-
-## Acknowledgments
+## 🙏 Acknowledgments
 
 - Inspired by Laravel's Eloquent Query Builder
-- Built with security and performance best practices
-- Follows Go idioms and conventions
+- Built with Go best practices and clean architecture
+- Community-driven development
+
+---
+
+**⭐ Star this repo if it helped you build awesome Go applications!**
