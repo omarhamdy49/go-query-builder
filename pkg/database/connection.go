@@ -8,12 +8,23 @@ import (
 	"math"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder/pkg/types"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq" // PostgreSQL driver
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
+
+// safeInt32 safely converts an int to int32, capping at max value to prevent overflow
+func safeInt32(value int) int32 {
+	if value > math.MaxInt32 {
+		return math.MaxInt32
+	}
+	if value < 0 {
+		return 0
+	}
+	return int32(value)
+}
 
 // Connection represents a database connection that abstracts different database drivers.
 type Connection struct {
@@ -42,7 +53,7 @@ func NewConnection(config types.Config) (*Connection, error) {
 
 func (c *Connection) connectMySQL() (*Connection, error) {
 	dsn := c.buildMySQLDSN()
-	
+
 	db, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to MySQL: %w", err)
@@ -55,7 +66,7 @@ func (c *Connection) connectMySQL() (*Connection, error) {
 
 func (c *Connection) connectPostgreSQL() (*Connection, error) {
 	dsn := c.buildPostgreSQLDSN()
-	
+
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
 		return nil, fmt.Errorf("failed to connect to PostgreSQL with sqlx: %w", err)
@@ -112,16 +123,10 @@ func (c *Connection) setupPgxPool() error {
 	}
 
 	maxOpenConns := c.getMaxOpenConns()
-	if maxOpenConns > math.MaxInt32 {
-		maxOpenConns = math.MaxInt32
-	}
-	poolConfig.MaxConns = int32(maxOpenConns) //nolint:gosec // G115: bounds-checked conversion
-	
+	poolConfig.MaxConns = safeInt32(maxOpenConns)
+
 	maxIdleConns := c.getMaxIdleConns()
-	if maxIdleConns > math.MaxInt32 {
-		maxIdleConns = math.MaxInt32
-	}
-	poolConfig.MinConns = int32(maxIdleConns) //nolint:gosec // G115: bounds-checked conversion
+	poolConfig.MinConns = safeInt32(maxIdleConns)
 	poolConfig.MaxConnLifetime = c.config.ConnMaxLifetime
 	poolConfig.MaxConnIdleTime = c.config.ConnMaxIdleTime
 
@@ -221,7 +226,7 @@ func (c *Connection) BeginTx(ctx context.Context, opts *types.TxOptions) (types.
 		sqlOpts.Isolation = sql.IsolationLevel(opts.Isolation)
 		sqlOpts.ReadOnly = opts.ReadOnly
 	}
-	
+
 	tx, err := c.db.BeginTxx(ctx, sqlOpts)
 	if err != nil {
 		return nil, err
@@ -263,16 +268,16 @@ func (c *Connection) Stats() types.DBStats {
 		stats := c.db.Stats()
 		return types.DBStats{
 			OpenConnections: stats.OpenConnections,
-			InUse:          stats.InUse,
-			Idle:           stats.Idle,
+			InUse:           stats.InUse,
+			Idle:            stats.Idle,
 		}
 	}
 	if c.pgxPool != nil {
 		stat := c.pgxPool.Stat()
 		return types.DBStats{
 			OpenConnections: int(stat.TotalConns()),
-			InUse:          int(stat.AcquiredConns()),
-			Idle:           int(stat.IdleConns()),
+			InUse:           int(stat.AcquiredConns()),
+			Idle:            int(stat.IdleConns()),
 		}
 	}
 	return types.DBStats{}
