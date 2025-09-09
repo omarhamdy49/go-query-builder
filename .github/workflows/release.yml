@@ -14,129 +14,129 @@ jobs:
     name: Test Before Release
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23'
-        
-    - name: Run tests
-      run: go test -race ./...
-      
-    - name: Build
-      run: go build -v ./...
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Run tests
+        run: go test -race ./...
+
+      - name: Build
+        run: go build -v ./...
 
   release:
     name: Create Release
     runs-on: ubuntu-latest
     needs: test
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
-        
-    - name: Set up Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23'
-        
-    - name: Get version
-      id: version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-      
-    - name: Build examples
-      run: |
-        mkdir -p dist
-        
-        # Build examples for multiple platforms
-        GOOS=linux GOARCH=amd64 go build -o dist/basic_usage_linux_amd64 examples/basic_usage.go examples/advanced_features.go
-        GOOS=darwin GOARCH=amd64 go build -o dist/basic_usage_darwin_amd64 examples/basic_usage.go examples/advanced_features.go
-        GOOS=windows GOARCH=amd64 go build -o dist/basic_usage_windows_amd64.exe examples/basic_usage.go examples/advanced_features.go
-        
-        GOOS=linux GOARCH=amd64 go build -o dist/env_config_linux_amd64 examples/env_config_example.go
-        GOOS=darwin GOARCH=amd64 go build -o dist/env_config_darwin_amd64 examples/env_config_example.go
-        GOOS=windows GOARCH=amd64 go build -o dist/env_config_windows_amd64.exe examples/env_config_example.go
-        
-    - name: Generate changelog
-      run: |
-        echo "# Changelog for ${{ steps.version.outputs.VERSION }}" > CHANGELOG.md
-        echo "" >> CHANGELOG.md
-        echo "## What's Changed" >> CHANGELOG.md
-        echo "" >> CHANGELOG.md
-        git log $(git describe --tags --abbrev=0 HEAD^)..HEAD --pretty=format:"- %s" >> CHANGELOG.md || echo "- Initial release" >> CHANGELOG.md
-        
-    - name: Create Release
-      uses: actions/create-release@v1
-      id: create_release
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version.outputs.VERSION }}
-        release_name: Release ${{ steps.version.outputs.VERSION }}
-        body_path: CHANGELOG.md
-        draft: false
-        prerelease: false
-        
-    - name: Upload Linux AMD64 Basic Usage
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/basic_usage_linux_amd64
-        asset_name: basic_usage_linux_amd64
-        asset_content_type: application/octet-stream
-        
-    - name: Upload macOS AMD64 Basic Usage
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/basic_usage_darwin_amd64
-        asset_name: basic_usage_darwin_amd64
-        asset_content_type: application/octet-stream
-        
-    - name: Upload Windows AMD64 Basic Usage
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/basic_usage_windows_amd64.exe
-        asset_name: basic_usage_windows_amd64.exe
-        asset_content_type: application/octet-stream
-        
-    - name: Upload Linux AMD64 Env Config
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/env_config_linux_amd64
-        asset_name: env_config_linux_amd64
-        asset_content_type: application/octet-stream
-        
-    - name: Upload macOS AMD64 Env Config
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/env_config_darwin_amd64
-        asset_name: env_config_darwin_amd64
-        asset_content_type: application/octet-stream
-        
-    - name: Upload Windows AMD64 Env Config
-      uses: actions/upload-release-asset@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/env_config_windows_amd64.exe
-        asset_name: env_config_windows_amd64.exe
-        asset_content_type: application/octet-stream
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Get version
+        id: version
+        run: echo "VERSION=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Build examples
+        run: |
+          mkdir -p dist
+          # Basic usage builds
+          GOOS=linux   GOARCH=amd64 go build -o dist/basic_usage_linux_amd64      examples/basic_usage.go examples/advanced_features.go
+          GOOS=darwin  GOARCH=amd64 go build -o dist/basic_usage_darwin_amd64     examples/basic_usage.go examples/advanced_features.go
+          GOOS=windows GOARCH=amd64 go build -o dist/basic_usage_windows_amd64.exe examples/basic_usage.go examples/advanced_features.go
+          # Env config builds
+          GOOS=linux   GOARCH=amd64 go build -o dist/env_config_linux_amd64       examples/env_config_example.go
+          GOOS=darwin  GOARCH=amd64 go build -o dist/env_config_darwin_amd64      examples/env_config_example.go
+          GOOS=windows GOARCH=amd64 go build -o dist/env_config_windows_amd64.exe examples/env_config_example.go
+
+      - name: Generate changelog
+        run: |
+          echo "# Changelog for ${{ steps.version.outputs.VERSION }}" > CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          echo "## What's Changed" >> CHANGELOG.md
+          echo "" >> CHANGELOG.md
+          git log "$(git describe --tags --abbrev=0 HEAD^)"..HEAD --pretty=format:"- %s" >> CHANGELOG.md || echo "- Initial release" >> CHANGELOG.md
+
+      # (Option A) Legacy create-release + upload assets
+      - name: Create Release
+        uses: actions/create-release@v1
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ steps.version.outputs.VERSION }}
+          release_name: Release ${{ steps.version.outputs.VERSION }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: Upload Linux AMD64 Basic Usage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/basic_usage_linux_amd64
+          asset_name: basic_usage_linux_amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS AMD64 Basic Usage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/basic_usage_darwin_amd64
+          asset_name: basic_usage_darwin_amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows AMD64 Basic Usage
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/basic_usage_windows_amd64.exe
+          asset_name: basic_usage_windows_amd64.exe
+          asset_content_type: application/octet-stream
+
+      - name: Upload Linux AMD64 Env Config
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/env_config_linux_amd64
+          asset_name: env_config_linux_amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload macOS AMD64 Env Config
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/env_config_darwin_amd64
+          asset_name: env_config_darwin_amd64
+          asset_content_type: application/octet-stream
+
+      - name: Upload Windows AMD64 Env Config
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./dist/env_config_windows_amd64.exe
+          asset_name: env_config_windows_amd64.exe
+          asset_content_type: application/octet-stream
 
   publish-docs:
     name: Publish Documentation
@@ -144,24 +144,20 @@ jobs:
     needs: release
     if: startsWith(github.ref, 'refs/tags/v')
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Setup Go
-      uses: actions/setup-go@v4
-      with:
-        go-version: '1.23'
-        
-    - name: Install godoc
-      run: go install golang.org/x/tools/cmd/godoc@latest
-      
-    - name: Generate API documentation
-      run: |
-        mkdir -p docs/api
-        godoc -html . > docs/api/index.html
-        
-    - name: Deploy to GitHub Pages
-      uses: peaceiris/actions-gh-pages@v3
-      if: github.ref == 'refs/heads/main'
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: ./docs
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+
+      - name: Install godoc
+        run: go install golang.org/x/tools/cmd/godoc@latest
+
+      - name: Generate API documentation
+        run: |
+          mkdir -p docs/api
+          godoc -html . > docs/api/index.html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-p
