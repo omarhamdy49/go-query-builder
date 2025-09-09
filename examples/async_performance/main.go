@@ -354,7 +354,7 @@ func performanceMonitoringExample() {
 	fmt.Println()
 }
 
-// func main() {
-// 	asyncPerformanceExample()
-// 	performanceMonitoringExample()
-// }
+func main() {
+	asyncPerformanceExample()
+	performanceMonitoringExample()
+}

@@ -9,7 +9,7 @@ import (
 	querybuilder "github.com/omarhamdy49/go-query-builder"
 )
 
-func paginationExample() {
+func main() {
 	ctx := context.Background()
 
 	fmt.Println("=== Laravel-Style Pagination Examples ===")
@@ -232,7 +232,3 @@ func paginationExample() {
 
 	fmt.Println("\n✨ Pagination examples complete!")
 }
-
-// func main() {
-// 	paginationExample()
-// }

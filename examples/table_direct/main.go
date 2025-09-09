@@ -6,11 +6,11 @@ import (
 	"log"
 	"time"
 
-	"github.com/omarhamdy49/go-query-builder"
+	querybuilder "github.com/omarhamdy49/go-query-builder"
 )
 
 // Example showing direct table usage without any configuration
-func tableDirectExample() {
+func main() {
 	ctx := context.Background()
 
 	fmt.Println("=== Direct Table Usage - Zero Configuration ===")
@@ -186,8 +186,4 @@ func tableDirectExample() {
 	}
 
 	fmt.Println("\n✨ All operations complete with zero configuration!")
-}
-
-func main() {
-	tableDirectExample()
 }
