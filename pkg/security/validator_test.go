@@ -7,7 +7,7 @@ import (
 )
 
 func TestValidateTableName(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -38,7 +38,7 @@ func TestValidateTableName(t *testing.T) {
 }
 
 func TestValidateColumnName(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name       string
@@ -68,7 +68,7 @@ func TestValidateColumnName(t *testing.T) {
 }
 
 func TestValidateOperator(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	validOperators := []types.Operator{
 		types.OpEqual,
@@ -96,7 +96,7 @@ func TestValidateOperator(t *testing.T) {
 }
 
 func TestValidateStringValue(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -127,7 +127,7 @@ func TestValidateStringValue(t *testing.T) {
 }
 
 func TestValidateRawSQL(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -158,7 +158,7 @@ func TestValidateRawSQL(t *testing.T) {
 }
 
 func TestValidateLimit(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -186,7 +186,7 @@ func TestValidateLimit(t *testing.T) {
 }
 
 func TestValidateOffset(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -215,7 +215,7 @@ func TestValidateOffset(t *testing.T) {
 }
 
 func TestSanitizeInput(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name     string
@@ -240,7 +240,7 @@ func TestSanitizeInput(t *testing.T) {
 }
 
 func TestEscapeString(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name     string
@@ -265,7 +265,7 @@ func TestEscapeString(t *testing.T) {
 }
 
 func TestValidateOrderBy(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	tests := []struct {
 		name      string
@@ -319,7 +319,7 @@ func TestSecureQueryBuilderValidation(t *testing.T) {
 }
 
 func TestCustomValidationPatterns(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	// Test adding custom table pattern
 	err := validator.AddAllowedTablePattern(`^test_[a-z]+$`)
@@ -341,7 +341,7 @@ func TestCustomValidationPatterns(t *testing.T) {
 }
 
 func TestStrictModeToggle(t *testing.T) {
-	validator := NewSecurityValidator()
+	validator := NewValidator()
 
 	// With strict mode (default)
 	err := validator.ValidateTableName("table-with-dashes")
@@ -354,7 +354,7 @@ func TestStrictModeToggle(t *testing.T) {
 	_ = validator.ValidateTableName("table-with-dashes")
 	// Should still error due to forbidden patterns, but different validation logic
 	// This test mainly ensures the SetStrictMode method works
-	
+
 	// Re-enable strict mode
 	validator.SetStrictMode(true)
 	err = validator.ValidateTableName("valid_table")

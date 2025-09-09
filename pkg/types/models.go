@@ -1,5 +1,7 @@
 // Package types provides type definitions, interfaces, and constants used throughout the go-query-builder.
 // It includes model structures, query builder interfaces, operators, and other shared types.
+//
+//nolint:revive // Package name 'types' is appropriate for this package containing type definitions
 package types
 
 import (

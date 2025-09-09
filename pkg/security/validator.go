@@ -10,19 +10,19 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
-// SecurityValidator provides security validation for SQL queries and database identifiers.
-type SecurityValidator struct {
-	strictMode           bool
-	allowedTablePatterns []*regexp.Regexp
-	allowedColumnPatterns[]*regexp.Regexp
-	forbiddenKeywords    []string
-	maxQueryLength       int
+// Validator provides security validation for SQL queries and database identifiers.
+type Validator struct {
+	strictMode            bool
+	allowedTablePatterns  []*regexp.Regexp
+	allowedColumnPatterns []*regexp.Regexp
+	forbiddenKeywords     []string
+	maxQueryLength        int
 }
 
-// NewSecurityValidator creates a new SecurityValidator with default security settings.
-func NewSecurityValidator() *SecurityValidator {
-	return &SecurityValidator{
-		strictMode:           true,
+// NewValidator creates a new security validator with default configuration.
+func NewValidator() *Validator {
+	return &Validator{
+		strictMode: true,
 		allowedTablePatterns: []*regexp.Regexp{
 			regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`),
 		},
@@ -38,13 +38,13 @@ func NewSecurityValidator() *SecurityValidator {
 }
 
 // SetStrictMode enables or disables strict validation mode.
-func (v *SecurityValidator) SetStrictMode(strict bool) *SecurityValidator {
+func (v *Validator) SetStrictMode(strict bool) *Validator {
 	v.strictMode = strict
 	return v
 }
 
 // AddAllowedTablePattern adds a regex pattern to the list of allowed table name patterns.
-func (v *SecurityValidator) AddAllowedTablePattern(pattern string) error {
+func (v *Validator) AddAllowedTablePattern(pattern string) error {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return fmt.Errorf("invalid table pattern: %w", err)
@@ -54,7 +54,7 @@ func (v *SecurityValidator) AddAllowedTablePattern(pattern string) error {
 }
 
 // AddAllowedColumnPattern adds a regex pattern to the list of allowed column name patterns.
-func (v *SecurityValidator) AddAllowedColumnPattern(pattern string) error {
+func (v *Validator) AddAllowedColumnPattern(pattern string) error {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
 		return fmt.Errorf("invalid column pattern: %w", err)
@@ -64,19 +64,19 @@ func (v *SecurityValidator) AddAllowedColumnPattern(pattern string) error {
 }
 
 // AddForbiddenKeyword adds a keyword to the list of forbidden terms.
-func (v *SecurityValidator) AddForbiddenKeyword(keyword string) *SecurityValidator {
+func (v *Validator) AddForbiddenKeyword(keyword string) *Validator {
 	v.forbiddenKeywords = append(v.forbiddenKeywords, strings.ToUpper(keyword))
 	return v
 }
 
 // SetMaxQueryLength sets the maximum allowed length for SQL queries.
-func (v *SecurityValidator) SetMaxQueryLength(length int) *SecurityValidator {
+func (v *Validator) SetMaxQueryLength(length int) *Validator {
 	v.maxQueryLength = length
 	return v
 }
 
 // ValidateTableName validates a table name against security rules.
-func (v *SecurityValidator) ValidateTableName(table string) error {
+func (v *Validator) ValidateTableName(table string) error {
 	if table == "" {
 		return fmt.Errorf("table name cannot be empty")
 	}
@@ -108,7 +108,7 @@ func (v *SecurityValidator) ValidateTableName(table string) error {
 }
 
 // ValidateColumnName validates a column name against security rules.
-func (v *SecurityValidator) ValidateColumnName(column string) error {
+func (v *Validator) ValidateColumnName(column string) error {
 	if column == "" {
 		return fmt.Errorf("column name cannot be empty")
 	}
@@ -140,7 +140,7 @@ func (v *SecurityValidator) ValidateColumnName(column string) error {
 }
 
 // ValidateOperator validates that an SQL operator is allowed.
-func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
+func (v *Validator) ValidateOperator(operator types.Operator) error {
 	allowedOperators := map[types.Operator]bool{
 		types.OpEqual:              true,
 		types.OpNotEqual:           true,
@@ -173,7 +173,7 @@ func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
 }
 
 // ValidateValue validates a query parameter value for security risks.
-func (v *SecurityValidator) ValidateValue(value interface{}) error {
+func (v *Validator) ValidateValue(value interface{}) error {
 	if value == nil {
 		return nil
 	}
@@ -192,7 +192,7 @@ func (v *SecurityValidator) ValidateValue(value interface{}) error {
 	return nil
 }
 
-func (v *SecurityValidator) validateStringValue(value string) error {
+func (v *Validator) validateStringValue(value string) error {
 	if len(value) > 1000 {
 		return fmt.Errorf("string value too long: %d characters (max 1000)", len(value))
 	}
@@ -214,7 +214,7 @@ func (v *SecurityValidator) validateStringValue(value string) error {
 }
 
 // ValidateRawSQL validates raw SQL strings for injection attacks and forbidden patterns.
-func (v *SecurityValidator) ValidateRawSQL(sql string) error {
+func (v *Validator) ValidateRawSQL(sql string) error {
 	if sql == "" {
 		return fmt.Errorf("raw SQL cannot be empty")
 	}
@@ -236,7 +236,7 @@ func (v *SecurityValidator) ValidateRawSQL(sql string) error {
 	return nil
 }
 
-func (v *SecurityValidator) checkForSQLInjectionPatterns(sql string) error {
+func (v *Validator) checkForSQLInjectionPatterns(sql string) error {
 	dangerous := []string{
 		`(?i)(union\s+select)`,
 		`(?i)(or\s+1\s*=\s*1)`,
@@ -260,7 +260,7 @@ func (v *SecurityValidator) checkForSQLInjectionPatterns(sql string) error {
 }
 
 // SanitizeInput removes potentially dangerous characters from user input.
-func (v *SecurityValidator) SanitizeInput(input string) string {
+func (v *Validator) SanitizeInput(input string) string {
 	if input == "" {
 		return input
 	}
@@ -273,28 +273,28 @@ func (v *SecurityValidator) SanitizeInput(input string) string {
 	}
 
 	sanitized := result.String()
-	
+
 	sanitized = strings.ReplaceAll(sanitized, "<script", "&lt;script")
 	sanitized = strings.ReplaceAll(sanitized, "javascript:", "")
 	sanitized = strings.ReplaceAll(sanitized, "vbscript:", "")
-	
+
 	return sanitized
 }
 
 // EscapeString escapes special characters in a string to prevent SQL injection.
-func (v *SecurityValidator) EscapeString(input string) string {
+func (v *Validator) EscapeString(input string) string {
 	if input == "" {
 		return input
 	}
 
 	escaped := strings.ReplaceAll(input, "'", "''")
 	escaped = strings.ReplaceAll(escaped, "\\", "\\\\")
-	
+
 	return escaped
 }
 
 // ValidateLimit validates that a LIMIT value is within acceptable bounds.
-func (v *SecurityValidator) ValidateLimit(limit int) error {
+func (v *Validator) ValidateLimit(limit int) error {
 	if limit < 0 {
 		return fmt.Errorf("limit cannot be negative: %d", limit)
 	}
@@ -305,7 +305,7 @@ func (v *SecurityValidator) ValidateLimit(limit int) error {
 }
 
 // ValidateOffset validates that an OFFSET value is within acceptable bounds.
-func (v *SecurityValidator) ValidateOffset(offset int) error {
+func (v *Validator) ValidateOffset(offset int) error {
 	if offset < 0 {
 		return fmt.Errorf("offset cannot be negative: %d", offset)
 	}
@@ -316,7 +316,7 @@ func (v *SecurityValidator) ValidateOffset(offset int) error {
 }
 
 // ValidateOrderBy validates an ORDER BY clause for security issues.
-func (v *SecurityValidator) ValidateOrderBy(column string, direction types.OrderDirection) error {
+func (v *Validator) ValidateOrderBy(column string, direction types.OrderDirection) error {
 	if err := v.ValidateColumnName(column); err != nil {
 		return fmt.Errorf("invalid order by column: %w", err)
 	}
@@ -329,24 +329,24 @@ func (v *SecurityValidator) ValidateOrderBy(column string, direction types.Order
 }
 
 // ValidateGroupBy validates a GROUP BY column for security issues.
-func (v *SecurityValidator) ValidateGroupBy(column string) error {
+func (v *Validator) ValidateGroupBy(column string) error {
 	return v.ValidateColumnName(column)
 }
 
 // SecureQueryBuilder provides a secure wrapper for query building with validation.
 type SecureQueryBuilder struct {
-	validator *SecurityValidator
+	validator *Validator
 }
 
 // NewSecureQueryBuilder creates a new secure query builder with default validation settings.
 func NewSecureQueryBuilder() *SecureQueryBuilder {
 	return &SecureQueryBuilder{
-		validator: NewSecurityValidator(),
+		validator: NewValidator(),
 	}
 }
 
 // GetValidator returns the underlying security validator.
-func (sqb *SecureQueryBuilder) GetValidator() *SecurityValidator {
+func (sqb *SecureQueryBuilder) GetValidator() *Validator {
 	return sqb.validator
 }
 

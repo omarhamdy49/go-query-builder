@@ -1,4 +1,6 @@
 // Package types contains core types, interfaces, and constants used throughout the query builder.
+//
+//nolint:revive // Package name 'types' is appropriate for this package containing type definitions
 package types
 
 // Driver represents different database drivers supported by the query builder.
