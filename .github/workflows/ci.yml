@@ -65,8 +65,8 @@ jobs:
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v8
       with:
-        version: v2.4.0
-        args: --timeout=5m ./pkg/... ./querybuilder.go
+        version: latest
+        args: --timeout=5m
         
   security:
     name: Security Scan
@@ -105,14 +105,17 @@ jobs:
     - name: Build examples individually
       run: |
         cd examples
-        # Only build examples that have working main functions
-        buildable_examples=("basic_usage.go" "async_performance.go" "pagination_example.go" "table_direct.go" "secure_crud_operations.go")
-        for file in "${buildable_examples[@]}"; do
-          echo "Building $file..."
-          go build -o /tmp/$(basename "$file" .go) "$file" || echo "Failed to build $file, continuing..."
+        # Build examples from their subdirectories
+        for dir in */; do
+          if [ -f "$dir/main.go" ]; then
+            echo "Building example in $dir..."
+            cd "$dir"
+            go build -o "/tmp/$(basename "$dir")" . || echo "Failed to build $dir, continuing..."
+            cd ..
+          fi
         done
         
     - name: Validate example compilation
       run: |
         echo "Examples compiled successfully"
-        ls -la /tmp/basic_usage /tmp/pagination_example /tmp/table_direct /tmp/async_performance 2>/dev/null || echo "Some examples may not have compiled"
+        ls -la /tmp/basic_usage /tmp/pagination_example /tmp/table_direct /tmp/async_performance /tmp/secure_crud_operations 2>/dev/null || echo "Some examples may not have compiled"

@@ -11,7 +11,7 @@ import (
 
 // Secure CRUD Operations Example
 // Demonstrates INSERT, UPDATE, DELETE with highest security standards
-func main4() {
+func main() {
 	fmt.Println("🔒 Secure CRUD Operations with SQL Injection Prevention")
 	fmt.Println("======================================================")
 
