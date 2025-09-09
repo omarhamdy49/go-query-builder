@@ -287,7 +287,7 @@ func (lc *LazyCollection) Filter(_ func(map[string]interface{}) bool) *LazyColle
 }
 
 // Map creates a new lazy collection that applies the given mapper function.
-func (lc *LazyCollection) Map(mapper func(map[string]interface{}) map[string]interface{}) *LazyCollection {
+func (lc *LazyCollection) Map(_ func(map[string]interface{}) map[string]interface{}) *LazyCollection {
 	// Create a new lazy collection that applies the mapper
 	return &LazyCollection{
 		executor:     lc.executor,
@@ -347,7 +347,7 @@ func (c *Cursor) Scan(dest ...interface{}) error {
 }
 
 // ScanStruct scans the current row into a struct (not yet implemented).
-func (c *Cursor) ScanStruct(dest interface{}) error {
+func (c *Cursor) ScanStruct(_ interface{}) error {
 	return fmt.Errorf("struct scanning not implemented")
 }
 

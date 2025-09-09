@@ -422,7 +422,7 @@ func joinColumns(columns []string) string {
 	return joinStrings(columns, ", ")
 }
 
-func joinStrings(strs []string, _sep string) string {
+func joinStrings(strs []string, _ string) string {
 	separator := ", "
 	if len(strs) == 0 {
 		return ""

@@ -43,7 +43,7 @@ func (t *Transaction) Begin() (types.Tx, error) {
 }
 
 // BeginTx returns an error as nested transactions are not supported.
-func (t *Transaction) BeginTx(_ context.Context, opts *types.TxOptions) (types.Tx, error) {
+func (t *Transaction) BeginTx(_ context.Context, _ *types.TxOptions) (types.Tx, error) {
 	return nil, fmt.Errorf("cannot start a transaction within a transaction")
 }
 

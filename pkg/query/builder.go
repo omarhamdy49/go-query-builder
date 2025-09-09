@@ -706,7 +706,6 @@ func (qb *Builder) SimplePaginate(ctx context.Context, page int, perPage int) (t
 	return result, nil
 }
 
-// Async query methods
 // GetAsync executes the query asynchronously and returns a channel for results.
 func (qb *Builder) GetAsync(ctx context.Context) <-chan types.AsyncResult {
 	resultChan := make(chan types.AsyncResult, 1)

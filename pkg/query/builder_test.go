@@ -12,15 +12,15 @@ type MockExecutor struct {
 	driver types.Driver
 }
 
-func (m *MockExecutor) QueryContext(ctx context.Context, query string, args ...interface{}) (types.Rows, error) {
+func (m *MockExecutor) QueryContext(_ context.Context, _ string, _ ...interface{}) (types.Rows, error) {
 	return nil, nil
 }
 
-func (m *MockExecutor) QueryRowContext(ctx context.Context, query string, args ...interface{}) types.Row {
+func (m *MockExecutor) QueryRowContext(_ context.Context, _ string, _ ...interface{}) types.Row {
 	return nil
 }
 
-func (m *MockExecutor) ExecContext(ctx context.Context, query string, args ...interface{}) (types.Result, error) {
+func (m *MockExecutor) ExecContext(_ context.Context, _ string, _ ...interface{}) (types.Result, error) {
 	return nil, nil
 }
 
@@ -28,7 +28,7 @@ func (m *MockExecutor) Begin() (types.Tx, error) {
 	return nil, nil
 }
 
-func (m *MockExecutor) BeginTx(ctx context.Context, opts *types.TxOptions) (types.Tx, error) {
+func (m *MockExecutor) BeginTx(_ context.Context, _ *types.TxOptions) (types.Tx, error) {
 	return nil, nil
 }
 
