@@ -11,10 +11,11 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
+	_ "github.com/lib/pq" // PostgreSQL driver
 	_ "github.com/go-sql-driver/mysql"
 )
 
+// Connection represents a database connection that abstracts different database drivers.
 type Connection struct {
 	db      *sqlx.DB
 	pgxPool *pgxpool.Pool
@@ -22,6 +23,7 @@ type Connection struct {
 	config  types.Config
 }
 
+// NewConnection creates a new database connection based on the provided configuration.
 func NewConnection(config types.Config) (*Connection, error) {
 	conn := &Connection{
 		driver: config.Driver,
@@ -188,18 +190,22 @@ func (c *Connection) getConnMaxIdleTime() time.Duration {
 	return c.config.ConnMaxIdleTime
 }
 
+// QueryContext executes a query that returns rows, typically a SELECT.
 func (c *Connection) QueryContext(ctx context.Context, query string, args ...interface{}) (types.Rows, error) {
 	return c.db.QueryContext(ctx, query, args...)
 }
 
+// QueryRowContext executes a query that is expected to return at most one row.
 func (c *Connection) QueryRowContext(ctx context.Context, query string, args ...interface{}) types.Row {
 	return c.db.QueryRowContext(ctx, query, args...)
 }
 
+// ExecContext executes a query without returning any rows.
 func (c *Connection) ExecContext(ctx context.Context, query string, args ...interface{}) (types.Result, error) {
 	return c.db.ExecContext(ctx, query, args...)
 }
 
+// Begin starts a transaction with default options.
 func (c *Connection) Begin() (types.Tx, error) {
 	tx, err := c.db.Beginx()
 	if err != nil {
@@ -208,6 +214,7 @@ func (c *Connection) Begin() (types.Tx, error) {
 	return NewTransaction(tx, c.driver), nil
 }
 
+// BeginTx starts a transaction with the specified context and options.
 func (c *Connection) BeginTx(ctx context.Context, opts *types.TxOptions) (types.Tx, error) {
 	sqlOpts := &sql.TxOptions{}
 	if opts != nil {
@@ -222,10 +229,12 @@ func (c *Connection) BeginTx(ctx context.Context, opts *types.TxOptions) (types.
 	return NewTransaction(tx, c.driver), nil
 }
 
+// Driver returns the database driver type.
 func (c *Connection) Driver() types.Driver {
 	return c.driver
 }
 
+// Close closes the database connection and releases resources.
 func (c *Connection) Close() error {
 	var err error
 	if c.db != nil {
@@ -237,6 +246,7 @@ func (c *Connection) Close() error {
 	return err
 }
 
+// Ping verifies a connection to the database is still alive.
 func (c *Connection) Ping() error {
 	if c.db != nil {
 		return c.db.Ping()
@@ -247,6 +257,7 @@ func (c *Connection) Ping() error {
 	return fmt.Errorf("no connection available")
 }
 
+// Stats returns database statistics including connection pool information.
 func (c *Connection) Stats() types.DBStats {
 	if c.db != nil {
 		stats := c.db.Stats()
@@ -267,10 +278,12 @@ func (c *Connection) Stats() types.DBStats {
 	return types.DBStats{}
 }
 
+// PgxPool returns the underlying pgx connection pool for PostgreSQL connections.
 func (c *Connection) PgxPool() *pgxpool.Pool {
 	return c.pgxPool
 }
 
+// SqlxDB returns the underlying sqlx database connection.
 func (c *Connection) SqlxDB() *sqlx.DB {
 	return c.db
 }

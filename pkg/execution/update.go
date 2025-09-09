@@ -104,6 +104,7 @@ func (e *QueryExecutor) UpdateJSONRemove(ctx context.Context, qb QueryBuilderInt
 	return rowsAffected, nil
 }
 
+// Increment increases the value of a numeric column by the specified amount (default 1).
 func (e *QueryExecutor) Increment(ctx context.Context, qb QueryBuilderInterface, column string, value ...interface{}) (int64, error) {
 	amount := 1
 	if len(value) > 0 {
@@ -144,6 +145,7 @@ func (e *QueryExecutor) Increment(ctx context.Context, qb QueryBuilderInterface,
 	return rowsAffected, nil
 }
 
+// Decrement decreases the value of a numeric column by the specified amount (default 1).
 func (e *QueryExecutor) Decrement(ctx context.Context, qb QueryBuilderInterface, column string, value ...interface{}) (int64, error) {
 	amount := 1
 	if len(value) > 0 {
@@ -184,6 +186,7 @@ func (e *QueryExecutor) Decrement(ctx context.Context, qb QueryBuilderInterface,
 	return rowsAffected, nil
 }
 
+// UpdateOrCreate updates a record matching the attributes or creates a new one with the combined values.
 func (e *QueryExecutor) UpdateOrCreate(ctx context.Context, qb QueryBuilderInterface, attributes map[string]interface{}, values map[string]interface{}) (map[string]interface{}, error) {
 	clone := qb.Clone()
 	for column, value := range attributes {
@@ -224,6 +227,7 @@ func (e *QueryExecutor) UpdateOrCreate(ctx context.Context, qb QueryBuilderInter
 	return insertValues, nil
 }
 
+// UpdateOrInsert updates a record matching the attributes or inserts a new one with the combined values.
 func (e *QueryExecutor) UpdateOrInsert(ctx context.Context, qb QueryBuilderInterface, attributes map[string]interface{}, values map[string]interface{}) error {
 	clone := qb.Clone()
 	for column, value := range attributes {

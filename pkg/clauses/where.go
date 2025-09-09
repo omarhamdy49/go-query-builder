@@ -52,6 +52,7 @@ func NewWhereBetweenClause(column string, values []interface{}, not bool) *Where
 	}
 }
 
+// NewWhereInClause creates a new IN or NOT IN WHERE clause.
 func NewWhereInClause(column string, values []interface{}, not bool) *WhereClause {
 	operator := types.OpIn
 	if not {
@@ -67,6 +68,7 @@ func NewWhereInClause(column string, values []interface{}, not bool) *WhereClaus
 	}
 }
 
+// NewWhereNullClause creates a new IS NULL or IS NOT NULL WHERE clause.
 func NewWhereNullClause(column string, not bool) *WhereClause {
 	operator := types.OpIsNull
 	if not {
@@ -81,6 +83,7 @@ func NewWhereNullClause(column string, not bool) *WhereClause {
 	}
 }
 
+// NewWhereExistsClause creates a new EXISTS or NOT EXISTS WHERE clause with a subquery.
 func NewWhereExistsClause(query types.QueryBuilder, not bool) *WhereClause {
 	operator := types.OpExists
 	if not {
@@ -95,6 +98,7 @@ func NewWhereExistsClause(query types.QueryBuilder, not bool) *WhereClause {
 	}
 }
 
+// NewWhereJSONContainsClause creates a new WHERE clause for JSON containment checks.
 func NewWhereJSONContainsClause(column string, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "json",
@@ -105,6 +109,7 @@ func NewWhereJSONContainsClause(column string, value interface{}) *WhereClause {
 	}
 }
 
+// NewWhereJSONLengthClause creates a new WHERE clause for JSON length comparisons.
 func NewWhereJSONLengthClause(column string, operator types.Operator, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "json_length",
@@ -115,6 +120,7 @@ func NewWhereJSONLengthClause(column string, operator types.Operator, value inte
 	}
 }
 
+// NewWhereFullTextClause creates a new WHERE clause for full-text search across multiple columns.
 func NewWhereFullTextClause(columns []string, value string) *WhereClause {
 	return &WhereClause{
 		Type:     "fulltext",
@@ -125,19 +131,23 @@ func NewWhereFullTextClause(columns []string, value string) *WhereClause {
 	}
 }
 
+// SetBoolean sets the boolean operator (AND/OR) for the WHERE clause and returns the clause.
 func (w *WhereClause) SetBoolean(boolean types.BooleanOperator) *WhereClause {
 	w.Boolean = boolean
 	return w
 }
 
+// IsComplex returns true if the WHERE clause contains complex operations like EXISTS or subqueries.
 func (w *WhereClause) IsComplex() bool {
 	return w.Type == "exists" || w.Type == "subquery"
 }
 
+// HasSubQuery returns true if the WHERE clause contains a subquery.
 func (w *WhereClause) HasSubQuery() bool {
 	return w.Query != nil
 }
 
+// IsRaw returns true if the WHERE clause contains raw SQL.
 func (w *WhereClause) IsRaw() bool {
 	return w.Type == "raw"
 }

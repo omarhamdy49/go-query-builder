@@ -9,6 +9,7 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// Chunk processes query results in chunks of the specified size using OFFSET-based pagination.
 func (e *QueryExecutor) Chunk(ctx context.Context, qb QueryBuilderInterface, size int, callback types.ChunkFunc) error {
 	if size <= 0 {
 		return fmt.Errorf("chunk size must be positive")
@@ -89,6 +90,7 @@ func (e *QueryExecutor) ChunkByID(ctx context.Context, qb QueryBuilderInterface,
 	return nil
 }
 
+// Each iterates over query results one item at a time using chunking.
 func (e *QueryExecutor) Each(ctx context.Context, qb QueryBuilderInterface, callback types.LazyFunc, chunkSize ...int) error {
 	size := 1000
 	if len(chunkSize) > 0 && chunkSize[0] > 0 {
@@ -122,6 +124,7 @@ func (e *QueryExecutor) EachByID(ctx context.Context, qb QueryBuilderInterface, 
 	})
 }
 
+// Lazy creates a lazy collection that loads data in chunks as needed.
 func (e *QueryExecutor) Lazy(ctx context.Context, qb QueryBuilderInterface, chunkSize ...int) (*LazyCollection, error) {
 	size := 1000
 	if len(chunkSize) > 0 && chunkSize[0] > 0 {
@@ -161,6 +164,7 @@ func (e *QueryExecutor) LazyByID(ctx context.Context, qb QueryBuilderInterface, 
 	}, nil
 }
 
+// LazyCollection provides lazy loading of query results with efficient memory usage.
 type LazyCollection struct {
 	executor     *QueryExecutor
 	qb           QueryBuilderInterface
@@ -176,6 +180,7 @@ type LazyCollection struct {
 	finished     bool
 }
 
+// Next advances the lazy collection to the next item and returns true if an item is available.
 func (lc *LazyCollection) Next() bool {
 	if lc.finished {
 		return false
@@ -198,6 +203,7 @@ func (lc *LazyCollection) Next() bool {
 	return !lc.finished
 }
 
+// Value returns the current item from the lazy collection.
 func (lc *LazyCollection) Value() map[string]interface{} {
 	if lc.currentBatch == nil || lc.batchIndex >= lc.currentBatch.Count() {
 		return nil
@@ -208,6 +214,7 @@ func (lc *LazyCollection) Value() map[string]interface{} {
 	return item
 }
 
+// Each iterates over all items in the lazy collection.
 func (lc *LazyCollection) Each(callback types.LazyFunc) error {
 	for lc.Next() {
 		if err := callback(lc.Value()); err != nil {
@@ -252,6 +259,7 @@ func (lc *LazyCollection) loadNextBatch() error {
 	return nil
 }
 
+// ToSlice converts the entire lazy collection to a slice by loading all items.
 func (lc *LazyCollection) ToSlice() ([]map[string]interface{}, error) {
 	var result []map[string]interface{}
 	
@@ -262,7 +270,8 @@ func (lc *LazyCollection) ToSlice() ([]map[string]interface{}, error) {
 	return result, nil
 }
 
-func (lc *LazyCollection) Filter(predicate func(map[string]interface{}) bool) *LazyCollection {
+// Filter creates a new lazy collection that applies the given predicate filter.
+func (lc *LazyCollection) Filter(_ func(map[string]interface{}) bool) *LazyCollection {
 	// Create a new lazy collection that applies the filter
 	return &LazyCollection{
 		executor:     lc.executor,
@@ -277,6 +286,7 @@ func (lc *LazyCollection) Filter(predicate func(map[string]interface{}) bool) *L
 	}
 }
 
+// Map creates a new lazy collection that applies the given mapper function.
 func (lc *LazyCollection) Map(mapper func(map[string]interface{}) map[string]interface{}) *LazyCollection {
 	// Create a new lazy collection that applies the mapper
 	return &LazyCollection{
@@ -292,6 +302,7 @@ func (lc *LazyCollection) Map(mapper func(map[string]interface{}) map[string]int
 	}
 }
 
+// Cursor creates a database cursor for streaming large result sets.
 func (e *QueryExecutor) Cursor(ctx context.Context, qb QueryBuilderInterface) (*Cursor, error) {
 	sql, bindings, err := qb.ToSQL()
 	if err != nil {
@@ -315,12 +326,14 @@ func (e *QueryExecutor) Cursor(ctx context.Context, qb QueryBuilderInterface) (*
 	}, nil
 }
 
+// Cursor provides low-level access to query results with streaming support.
 type Cursor struct {
 	rows    types.Rows
 	columns []string
 	closed  bool
 }
 
+// Next advances the cursor to the next row and returns true if a row is available.
 func (c *Cursor) Next() bool {
 	if c.closed {
 		return false
@@ -328,14 +341,17 @@ func (c *Cursor) Next() bool {
 	return c.rows.Next()
 }
 
+// Scan copies the columns in the current row into the provided destination values.
 func (c *Cursor) Scan(dest ...interface{}) error {
 	return c.rows.Scan(dest...)
 }
 
+// ScanStruct scans the current row into a struct (not yet implemented).
 func (c *Cursor) ScanStruct(dest interface{}) error {
 	return fmt.Errorf("struct scanning not implemented")
 }
 
+// ScanMap scans the current row into a map with column names as keys.
 func (c *Cursor) ScanMap() (map[string]interface{}, error) {
 	values := make([]interface{}, len(c.columns))
 	valuePtrs := make([]interface{}, len(c.columns))
@@ -361,6 +377,7 @@ func (c *Cursor) ScanMap() (map[string]interface{}, error) {
 	return result, nil
 }
 
+// Close closes the cursor and releases associated resources.
 func (c *Cursor) Close() error {
 	if !c.closed {
 		c.closed = true
@@ -369,10 +386,12 @@ func (c *Cursor) Close() error {
 	return nil
 }
 
+// Err returns any error encountered during iteration.
 func (c *Cursor) Err() error {
 	return c.rows.Err()
 }
 
+// Columns returns the names of all columns in the result set.
 func (c *Cursor) Columns() []string {
 	return c.columns
 }

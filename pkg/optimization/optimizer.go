@@ -14,12 +14,14 @@ import (
 )
 
 // QueryCache implements a thread-safe in-memory query cache
+// QueryCache implements a thread-safe in-memory query cache with TTL support.
 type QueryCache struct {
 	cache map[string]*CacheEntry
 	mutex sync.RWMutex
 	ttl   time.Duration
 }
 
+// CacheEntry represents a cached query result with metadata.
 type CacheEntry struct {
 	Data      types.Collection
 	Count     int64
@@ -41,6 +43,7 @@ func NewQueryCache(ttl time.Duration) *QueryCache {
 }
 
 // Get retrieves cached query result
+// Get retrieves a cached query result by key and returns the data, count, and whether it was found.
 func (qc *QueryCache) Get(key string) (types.Collection, int64, bool) {
 	qc.mutex.RLock()
 	defer qc.mutex.RUnlock()
@@ -60,6 +63,7 @@ func (qc *QueryCache) Get(key string) (types.Collection, int64, bool) {
 }
 
 // Set stores query result in cache
+// Set stores a query result in the cache with the specified key.
 func (qc *QueryCache) Set(key string, data types.Collection, count int64) {
 	qc.mutex.Lock()
 	defer qc.mutex.Unlock()
@@ -73,6 +77,7 @@ func (qc *QueryCache) Set(key string, data types.Collection, count int64) {
 }
 
 // Clear removes all cached entries
+// Clear removes all entries from the cache.
 func (qc *QueryCache) Clear() {
 	qc.mutex.Lock()
 	defer qc.mutex.Unlock()
@@ -81,6 +86,7 @@ func (qc *QueryCache) Clear() {
 }
 
 // Stats returns cache statistics
+// Stats returns cache usage statistics including hit counts and expired entries.
 func (qc *QueryCache) Stats() CacheStats {
 	qc.mutex.RLock()
 	defer qc.mutex.RUnlock()
@@ -118,6 +124,7 @@ func (qc *QueryCache) cleanupExpired() {
 	}
 }
 
+// CacheStats contains statistics about cache performance and usage.
 type CacheStats struct {
 	TotalEntries int   `json:"total_entries"`
 	TotalHits    int64 `json:"total_hits"`
@@ -125,6 +132,7 @@ type CacheStats struct {
 }
 
 // QueryOptimizer provides query optimization capabilities
+// QueryOptimizer provides comprehensive query optimization including caching and performance tracking.
 type QueryOptimizer struct {
 	cache          *QueryCache
 	config         types.QueryOptimization
@@ -134,6 +142,7 @@ type QueryOptimizer struct {
 	logMutex      sync.RWMutex
 }
 
+// PreparedStatement tracks usage statistics for prepared statements.
 type PreparedStatement struct {
 	SQL      string
 	Hash     string
@@ -141,6 +150,7 @@ type PreparedStatement struct {
 	CreatedAt time.Time
 }
 
+// QueryLogEntry represents a logged query execution with timing and error information.
 type QueryLogEntry struct {
 	SQL       string    `json:"sql"`
 	Bindings  []any     `json:"bindings"`
@@ -150,6 +160,7 @@ type QueryLogEntry struct {
 }
 
 // NewQueryOptimizer creates a new query optimizer
+// NewQueryOptimizer creates a new query optimizer with the specified configuration.
 func NewQueryOptimizer(config types.QueryOptimization) *QueryOptimizer {
 	var cache *QueryCache
 	if config.EnableQueryCache {
@@ -165,6 +176,7 @@ func NewQueryOptimizer(config types.QueryOptimization) *QueryOptimizer {
 }
 
 // GenerateCacheKey creates a cache key from SQL and bindings
+// GenerateCacheKey creates a unique cache key from SQL query and bindings.
 func (qo *QueryOptimizer) GenerateCacheKey(sql string, bindings []any) string {
 	hasher := sha256.New()
 	hasher.Write([]byte(sql))
@@ -175,6 +187,7 @@ func (qo *QueryOptimizer) GenerateCacheKey(sql string, bindings []any) string {
 }
 
 // GetCachedResult retrieves cached query result
+// GetCachedResult retrieves a cached query result by key.
 func (qo *QueryOptimizer) GetCachedResult(key string) (types.Collection, int64, bool) {
 	if qo.cache == nil {
 		return nil, 0, false
@@ -183,6 +196,7 @@ func (qo *QueryOptimizer) GetCachedResult(key string) (types.Collection, int64, 
 }
 
 // CacheResult stores query result in cache
+// CacheResult stores a query result in the cache.
 func (qo *QueryOptimizer) CacheResult(key string, data types.Collection, count int64) {
 	if qo.cache != nil {
 		qo.cache.Set(key, data, count)
@@ -190,6 +204,7 @@ func (qo *QueryOptimizer) CacheResult(key string, data types.Collection, count i
 }
 
 // RegisterPreparedStatement tracks prepared statement usage
+// RegisterPreparedStatement tracks the usage of prepared statements and returns a hash identifier.
 func (qo *QueryOptimizer) RegisterPreparedStatement(sql string) string {
 	if !qo.config.EnablePreparedStmt {
 		return ""
@@ -216,6 +231,7 @@ func (qo *QueryOptimizer) RegisterPreparedStatement(sql string) string {
 }
 
 // LogQuery records query execution for analysis
+// LogQuery records query execution information for performance analysis.
 func (qo *QueryOptimizer) LogQuery(sql string, bindings []any, duration time.Duration, err error) {
 	if !qo.config.EnableQueryLog {
 		return
@@ -244,6 +260,7 @@ func (qo *QueryOptimizer) LogQuery(sql string, bindings []any, duration time.Dur
 }
 
 // GetQueryStats returns query performance statistics
+// GetQueryStats returns comprehensive query performance statistics.
 func (qo *QueryOptimizer) GetQueryStats() QueryStats {
 	qo.logMutex.RLock()
 	defer qo.logMutex.RUnlock()
@@ -284,6 +301,7 @@ func (qo *QueryOptimizer) GetQueryStats() QueryStats {
 }
 
 // GetSlowQueries returns queries that took longer than threshold
+// GetSlowQueries returns all queries that exceeded the specified duration threshold.
 func (qo *QueryOptimizer) GetSlowQueries(threshold time.Duration) []QueryLogEntry {
 	qo.logMutex.RLock()
 	defer qo.logMutex.RUnlock()
@@ -299,6 +317,7 @@ func (qo *QueryOptimizer) GetSlowQueries(threshold time.Duration) []QueryLogEntr
 }
 
 // ClearStats clears all optimization statistics
+// ClearStats removes all cached data, query logs, and prepared statement statistics.
 func (qo *QueryOptimizer) ClearStats() {
 	qo.logMutex.Lock()
 	qo.queryLog = make([]QueryLogEntry, 0)
@@ -319,6 +338,7 @@ func (qo *QueryOptimizer) generateSQLHash(sql string) string {
 	return hex.EncodeToString(hasher.Sum(nil))
 }
 
+// QueryStats contains comprehensive query execution statistics.
 type QueryStats struct {
 	TotalQueries    int            `json:"total_queries"`
 	AverageDuration time.Duration  `json:"average_duration"`
@@ -328,11 +348,13 @@ type QueryStats struct {
 }
 
 // ConcurrencyManager manages concurrent query execution
+// ConcurrencyManager controls the number of concurrent query executions.
 type ConcurrencyManager struct {
 	semaphore chan struct{}
 }
 
 // NewConcurrencyManager creates a concurrency manager with max concurrent queries
+// NewConcurrencyManager creates a concurrency manager with the specified maximum concurrent operations.
 func NewConcurrencyManager(maxConcurrency int) *ConcurrencyManager {
 	return &ConcurrencyManager{
 		semaphore: make(chan struct{}, maxConcurrency),
@@ -340,6 +362,7 @@ func NewConcurrencyManager(maxConcurrency int) *ConcurrencyManager {
 }
 
 // Acquire acquires a slot for concurrent execution
+// Acquire obtains a concurrency slot, blocking if necessary until one is available.
 func (cm *ConcurrencyManager) Acquire(ctx context.Context) error {
 	select {
 	case cm.semaphore <- struct{}{}:
@@ -350,11 +373,13 @@ func (cm *ConcurrencyManager) Acquire(ctx context.Context) error {
 }
 
 // Release releases a concurrency slot
+// Release frees a concurrency slot, allowing other operations to proceed.
 func (cm *ConcurrencyManager) Release() {
 	<-cm.semaphore
 }
 
 // ExecuteWithConcurrencyLimit executes function with concurrency control
+// ExecuteWithConcurrencyLimit executes a function with concurrency control.
 func (cm *ConcurrencyManager) ExecuteWithConcurrencyLimit(ctx context.Context, fn func() error) error {
 	if err := cm.Acquire(ctx); err != nil {
 		return err

@@ -37,11 +37,13 @@ func NewSecurityValidator() *SecurityValidator {
 	}
 }
 
+// SetStrictMode enables or disables strict validation mode.
 func (v *SecurityValidator) SetStrictMode(strict bool) *SecurityValidator {
 	v.strictMode = strict
 	return v
 }
 
+// AddAllowedTablePattern adds a regex pattern to the list of allowed table name patterns.
 func (v *SecurityValidator) AddAllowedTablePattern(pattern string) error {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
@@ -51,6 +53,7 @@ func (v *SecurityValidator) AddAllowedTablePattern(pattern string) error {
 	return nil
 }
 
+// AddAllowedColumnPattern adds a regex pattern to the list of allowed column name patterns.
 func (v *SecurityValidator) AddAllowedColumnPattern(pattern string) error {
 	regex, err := regexp.Compile(pattern)
 	if err != nil {
@@ -60,16 +63,19 @@ func (v *SecurityValidator) AddAllowedColumnPattern(pattern string) error {
 	return nil
 }
 
+// AddForbiddenKeyword adds a keyword to the list of forbidden terms.
 func (v *SecurityValidator) AddForbiddenKeyword(keyword string) *SecurityValidator {
 	v.forbiddenKeywords = append(v.forbiddenKeywords, strings.ToUpper(keyword))
 	return v
 }
 
+// SetMaxQueryLength sets the maximum allowed length for SQL queries.
 func (v *SecurityValidator) SetMaxQueryLength(length int) *SecurityValidator {
 	v.maxQueryLength = length
 	return v
 }
 
+// ValidateTableName validates a table name against security rules.
 func (v *SecurityValidator) ValidateTableName(table string) error {
 	if table == "" {
 		return fmt.Errorf("table name cannot be empty")
@@ -101,6 +107,7 @@ func (v *SecurityValidator) ValidateTableName(table string) error {
 	return nil
 }
 
+// ValidateColumnName validates a column name against security rules.
 func (v *SecurityValidator) ValidateColumnName(column string) error {
 	if column == "" {
 		return fmt.Errorf("column name cannot be empty")
@@ -132,6 +139,7 @@ func (v *SecurityValidator) ValidateColumnName(column string) error {
 	return nil
 }
 
+// ValidateOperator validates that an SQL operator is allowed.
 func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
 	allowedOperators := map[types.Operator]bool{
 		types.OpEqual:              true,
@@ -164,6 +172,7 @@ func (v *SecurityValidator) ValidateOperator(operator types.Operator) error {
 	return nil
 }
 
+// ValidateValue validates a query parameter value for security risks.
 func (v *SecurityValidator) ValidateValue(value interface{}) error {
 	if value == nil {
 		return nil
@@ -204,6 +213,7 @@ func (v *SecurityValidator) validateStringValue(value string) error {
 	return nil
 }
 
+// ValidateRawSQL validates raw SQL strings for injection attacks and forbidden patterns.
 func (v *SecurityValidator) ValidateRawSQL(sql string) error {
 	if sql == "" {
 		return fmt.Errorf("raw SQL cannot be empty")
@@ -249,6 +259,7 @@ func (v *SecurityValidator) checkForSQLInjectionPatterns(sql string) error {
 	return nil
 }
 
+// SanitizeInput removes potentially dangerous characters from user input.
 func (v *SecurityValidator) SanitizeInput(input string) string {
 	if input == "" {
 		return input
@@ -270,6 +281,7 @@ func (v *SecurityValidator) SanitizeInput(input string) string {
 	return sanitized
 }
 
+// EscapeString escapes special characters in a string to prevent SQL injection.
 func (v *SecurityValidator) EscapeString(input string) string {
 	if input == "" {
 		return input
@@ -281,6 +293,7 @@ func (v *SecurityValidator) EscapeString(input string) string {
 	return escaped
 }
 
+// ValidateLimit validates that a LIMIT value is within acceptable bounds.
 func (v *SecurityValidator) ValidateLimit(limit int) error {
 	if limit < 0 {
 		return fmt.Errorf("limit cannot be negative: %d", limit)
@@ -291,6 +304,7 @@ func (v *SecurityValidator) ValidateLimit(limit int) error {
 	return nil
 }
 
+// ValidateOffset validates that an OFFSET value is within acceptable bounds.
 func (v *SecurityValidator) ValidateOffset(offset int) error {
 	if offset < 0 {
 		return fmt.Errorf("offset cannot be negative: %d", offset)
@@ -301,6 +315,7 @@ func (v *SecurityValidator) ValidateOffset(offset int) error {
 	return nil
 }
 
+// ValidateOrderBy validates an ORDER BY clause for security issues.
 func (v *SecurityValidator) ValidateOrderBy(column string, direction types.OrderDirection) error {
 	if err := v.ValidateColumnName(column); err != nil {
 		return fmt.Errorf("invalid order by column: %w", err)
@@ -313,24 +328,29 @@ func (v *SecurityValidator) ValidateOrderBy(column string, direction types.Order
 	return nil
 }
 
+// ValidateGroupBy validates a GROUP BY column for security issues.
 func (v *SecurityValidator) ValidateGroupBy(column string) error {
 	return v.ValidateColumnName(column)
 }
 
+// SecureQueryBuilder provides a secure wrapper for query building with validation.
 type SecureQueryBuilder struct {
 	validator *SecurityValidator
 }
 
+// NewSecureQueryBuilder creates a new secure query builder with default validation settings.
 func NewSecureQueryBuilder() *SecureQueryBuilder {
 	return &SecureQueryBuilder{
 		validator: NewSecurityValidator(),
 	}
 }
 
+// GetValidator returns the underlying security validator.
 func (sqb *SecureQueryBuilder) GetValidator() *SecurityValidator {
 	return sqb.validator
 }
 
+// ValidateQuery performs comprehensive validation on all components of a database query.
 func (sqb *SecureQueryBuilder) ValidateQuery(table string, columns []string, operators []types.Operator, values []interface{}) error {
 	if err := sqb.validator.ValidateTableName(table); err != nil {
 		return fmt.Errorf("table validation failed: %w", err)

@@ -7,6 +7,7 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// Upsert inserts new records or updates existing ones based on conflict resolution.
 func (e *QueryExecutor) Upsert(ctx context.Context, qb QueryBuilderInterface, values []map[string]interface{}, options types.UpsertOptions) error {
 	if len(values) == 0 {
 		return fmt.Errorf("no values provided for upsert")
@@ -162,6 +163,7 @@ func (e *QueryExecutor) upsertPostgreSQL(ctx context.Context, table string, valu
 	return nil
 }
 
+// InsertOrIgnore inserts records but ignores duplicates without raising an error.
 func (e *QueryExecutor) InsertOrIgnore(ctx context.Context, qb QueryBuilderInterface, values interface{}) error {
 	table := qb.GetTable()
 	if table == "" {
@@ -272,6 +274,7 @@ func (e *QueryExecutor) insertOrIgnoreBatch(ctx context.Context, table string, v
 	return nil
 }
 
+// Replace replaces records using MySQL's REPLACE INTO statement.
 func (e *QueryExecutor) Replace(ctx context.Context, qb QueryBuilderInterface, values map[string]interface{}) error {
 	if e.driver != types.MySQL {
 		return fmt.Errorf("replace is only supported for MySQL")

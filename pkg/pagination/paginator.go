@@ -12,6 +12,7 @@ import (
 )
 
 // Paginator handles pagination of query results.
+// Paginator handles pagination of database query results with various strategies.
 type Paginator struct {
 	executor types.QueryExecutor
 	driver   types.Driver
@@ -26,6 +27,7 @@ func NewPaginator(executor types.QueryExecutor, driver types.Driver) *Paginator 
 }
 
 // QueryBuilderInterface defines the minimal interface for query builders used in pagination.
+// QueryBuilderInterface defines the methods required for query builders used in pagination.
 type QueryBuilderInterface interface {
 	ToSQL() (string, []any, error)
 	Clone() types.QueryBuilder
@@ -35,6 +37,7 @@ type QueryBuilderInterface interface {
 }
 
 // Paginate executes a paginated query with full metadata.
+// Paginate executes a paginated query with complete metadata including total count.
 func (p *Paginator) Paginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*types.PaginationResult, error) {
 	if page < 1 {
 		page = 1
@@ -87,6 +90,7 @@ func (p *Paginator) Paginate(ctx context.Context, qb QueryBuilderInterface, page
 }
 
 // SimplePaginate executes a paginated query without total count calculation.
+// SimplePaginate executes a paginated query without calculating total count for better performance.
 func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface, page, perPage int) (*types.PaginationResult, error) {
 	if page < 1 {
 		page = 1
@@ -137,6 +141,7 @@ func (p *Paginator) SimplePaginate(ctx context.Context, qb QueryBuilderInterface
 	}, nil
 }
 
+// CursorPaginate executes cursor-based pagination for efficient handling of large datasets.
 func (p *Paginator) CursorPaginate(ctx context.Context, qb QueryBuilderInterface, cursor string, perPage int, cursorColumn ...string) (*CursorPaginationResult, error) {
 	if perPage < 1 {
 		perPage = 15
@@ -256,6 +261,7 @@ func (p *Paginator) wrapCountQuery(sql string) string {
 	return "SELECT COUNT(*) FROM (" + sql + ") AS count_query"
 }
 
+// SimplePaginationResult represents the result of simple pagination without total count.
 type SimplePaginationResult struct {
 	Data        types.Collection `json:"data"`
 	PerPage     int              `json:"per_page"`
@@ -265,6 +271,7 @@ type SimplePaginationResult struct {
 	HasMore     bool             `json:"has_more"`
 }
 
+// CursorPaginationResult represents the result of cursor-based pagination.
 type CursorPaginationResult struct {
 	Data       types.Collection `json:"data"`
 	PerPage    int              `json:"per_page"`
@@ -272,14 +279,17 @@ type CursorPaginationResult struct {
 	HasMore    bool             `json:"has_more"`
 }
 
+// HasPages returns true if there are more pages available.
 func (r *SimplePaginationResult) HasPages() bool {
 	return r.HasMore
 }
 
+// IsEmpty returns true if the pagination result contains no data.
 func (r *SimplePaginationResult) IsEmpty() bool {
 	return r.Data.IsEmpty()
 }
 
+// IsEmpty returns true if the cursor pagination result contains no data.
 func (r *CursorPaginationResult) IsEmpty() bool {
 	return r.Data.IsEmpty()
 }

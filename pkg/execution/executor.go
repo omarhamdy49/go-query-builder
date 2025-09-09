@@ -9,11 +9,13 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// QueryExecutor handles the execution of database queries built by query builders.
 type QueryExecutor struct {
 	executor types.QueryExecutor
 	driver   types.Driver
 }
 
+// NewQueryExecutor creates a new QueryExecutor with the specified executor and driver.
 func NewQueryExecutor(executor types.QueryExecutor, driver types.Driver) *QueryExecutor {
 	return &QueryExecutor{
 		executor: executor,
@@ -21,12 +23,14 @@ func NewQueryExecutor(executor types.QueryExecutor, driver types.Driver) *QueryE
 	}
 }
 
+// QueryBuilderInterface defines the methods required by query builders for execution.
 type QueryBuilderInterface interface {
 	ToSQL() (string, []interface{}, error)
 	Clone() types.QueryBuilder
 	GetTable() string
 }
 
+// Get executes the query and returns all matching rows as a collection.
 func (e *QueryExecutor) Get(ctx context.Context, qb QueryBuilderInterface) (types.Collection, error) {
 	sql, bindings, err := qb.ToSQL()
 	if err != nil {
@@ -42,6 +46,7 @@ func (e *QueryExecutor) Get(ctx context.Context, qb QueryBuilderInterface) (type
 	return e.scanRows(rows)
 }
 
+// First executes the query and returns the first matching row.
 func (e *QueryExecutor) First(ctx context.Context, qb QueryBuilderInterface) (map[string]interface{}, error) {
 	clone := qb.Clone()
 	limitedQB := clone.Limit(1)
@@ -58,6 +63,7 @@ func (e *QueryExecutor) First(ctx context.Context, qb QueryBuilderInterface) (ma
 	return collection.First(), nil
 }
 
+// Find finds a record by its primary key ID.
 func (e *QueryExecutor) Find(ctx context.Context, qb QueryBuilderInterface, id interface{}) (map[string]interface{}, error) {
 	clone := qb.Clone()
 	findQB := clone.Where("id", id).Limit(1)
@@ -74,6 +80,7 @@ func (e *QueryExecutor) Find(ctx context.Context, qb QueryBuilderInterface, id i
 	return collection.First(), nil
 }
 
+// Pluck returns all values from a single column as a slice.
 func (e *QueryExecutor) Pluck(ctx context.Context, qb QueryBuilderInterface, column string) ([]interface{}, error) {
 	clone := qb.Clone()
 	pluckQB := clone.Select(column)
@@ -86,6 +93,7 @@ func (e *QueryExecutor) Pluck(ctx context.Context, qb QueryBuilderInterface, col
 	return collection.Pluck(column), nil
 }
 
+// Count returns the number of rows that match the query conditions.
 func (e *QueryExecutor) Count(ctx context.Context, qb QueryBuilderInterface) (int64, error) {
 	result, err := e.aggregate(ctx, qb, types.Count, "*")
 	if err != nil {
@@ -123,18 +131,22 @@ func (e *QueryExecutor) Count(ctx context.Context, qb QueryBuilderInterface) (in
 	}
 }
 
+// Sum returns the sum of values in the specified column.
 func (e *QueryExecutor) Sum(ctx context.Context, qb QueryBuilderInterface, column string) (interface{}, error) {
 	return e.aggregate(ctx, qb, types.Sum, column)
 }
 
+// Avg returns the average value of the specified column.
 func (e *QueryExecutor) Avg(ctx context.Context, qb QueryBuilderInterface, column string) (interface{}, error) {
 	return e.aggregate(ctx, qb, types.Avg, column)
 }
 
+// Min returns the minimum value of the specified column.
 func (e *QueryExecutor) Min(ctx context.Context, qb QueryBuilderInterface, column string) (interface{}, error) {
 	return e.aggregate(ctx, qb, types.Min, column)
 }
 
+// Max returns the maximum value of the specified column.
 func (e *QueryExecutor) Max(ctx context.Context, qb QueryBuilderInterface, column string) (interface{}, error) {
 	return e.aggregate(ctx, qb, types.Max, column)
 }
@@ -158,6 +170,7 @@ func (e *QueryExecutor) aggregate(ctx context.Context, qb QueryBuilderInterface,
 	return result, nil
 }
 
+// Insert executes an INSERT statement with the provided values.
 func (e *QueryExecutor) Insert(ctx context.Context, qb QueryBuilderInterface, values map[string]interface{}) error {
 	if len(values) == 0 {
 		return fmt.Errorf("no values provided for insert")
@@ -191,6 +204,7 @@ func (e *QueryExecutor) Insert(ctx context.Context, qb QueryBuilderInterface, va
 	return nil
 }
 
+// InsertBatch executes a batch INSERT statement with multiple rows of values.
 func (e *QueryExecutor) InsertBatch(ctx context.Context, qb QueryBuilderInterface, values []map[string]interface{}) error {
 	if len(values) == 0 {
 		return fmt.Errorf("no values provided for batch insert")
@@ -240,6 +254,7 @@ func (e *QueryExecutor) InsertBatch(ctx context.Context, qb QueryBuilderInterfac
 	return nil
 }
 
+// Update executes an UPDATE statement and returns the number of affected rows.
 func (e *QueryExecutor) Update(ctx context.Context, qb QueryBuilderInterface, values map[string]interface{}) (int64, error) {
 	if len(values) == 0 {
 		return 0, fmt.Errorf("no values provided for update")
@@ -283,6 +298,7 @@ func (e *QueryExecutor) Update(ctx context.Context, qb QueryBuilderInterface, va
 	return rowsAffected, nil
 }
 
+// Delete executes a DELETE statement and returns the number of affected rows.
 func (e *QueryExecutor) Delete(ctx context.Context, qb QueryBuilderInterface) (int64, error) {
 	table := qb.GetTable()
 	if table == "" {
@@ -406,7 +422,7 @@ func joinColumns(columns []string) string {
 	return joinStrings(columns, ", ")
 }
 
-func joinStrings(strs []string, _ string) string {
+func joinStrings(strs []string, _sep string) string {
 	separator := ", "
 	if len(strs) == 0 {
 		return ""

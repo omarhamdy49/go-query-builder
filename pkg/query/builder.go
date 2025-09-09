@@ -54,12 +54,14 @@ func NewBuilder(executor types.QueryExecutor, driver types.Driver) *Builder {
 	return qb
 }
 
+// Table creates a new query builder instance with the specified executor, driver, and table name.
 func Table(executor types.QueryExecutor, driver types.Driver, table string) types.QueryBuilder {
 	qb := NewBuilder(executor, driver)
 	qb.table = table
 	return qb
 }
 
+// Clone creates a deep copy of the query builder.
 func (qb *Builder) Clone() types.QueryBuilder {
 	clone := &Builder{
 		executor:  qb.executor,
@@ -105,11 +107,13 @@ func (qb *Builder) Clone() types.QueryBuilder {
 	return clone
 }
 
+// From sets the table name for the query.
 func (qb *Builder) From(table string) types.QueryBuilder {
 	qb.table = table
 	return qb
 }
 
+// Select specifies the columns to be selected in the query.
 func (qb *Builder) Select(columns ...string) types.QueryBuilder {
 	for _, column := range columns {
 		qb.selects = append(qb.selects, clauses.NewSelectClause(column))
@@ -117,22 +121,26 @@ func (qb *Builder) Select(columns ...string) types.QueryBuilder {
 	return qb
 }
 
+// SelectRaw adds raw SQL to the SELECT clause with optional bindings.
 func (qb *Builder) SelectRaw(raw string, bindings ...interface{}) types.QueryBuilder {
 	qb.selects = append(qb.selects, clauses.NewSelectRawClause(raw))
 	qb.bindings = append(qb.bindings, bindings...)
 	return qb
 }
 
+// SelectAs selects a column with an alias.
 func (qb *Builder) SelectAs(column, alias string) types.QueryBuilder {
 	qb.selects = append(qb.selects, clauses.NewSelectAsClause(column, alias))
 	return qb
 }
 
+// Distinct adds the DISTINCT keyword to the query to eliminate duplicate results.
 func (qb *Builder) Distinct() types.QueryBuilder {
 	qb.distinct = true
 	return qb
 }
 
+// Where adds a basic WHERE clause to the query.
 func (qb *Builder) Where(column string, args ...interface{}) types.QueryBuilder {
 	clause := qb.parseWhereArgs(column, args...)
 	clause.SetBoolean(types.And)
@@ -140,6 +148,7 @@ func (qb *Builder) Where(column string, args ...interface{}) types.QueryBuilder 
 	return qb
 }
 
+// OrWhere adds an OR WHERE clause to the query.
 func (qb *Builder) OrWhere(column string, args ...interface{}) types.QueryBuilder {
 	clause := qb.parseWhereArgs(column, args...)
 	clause.SetBoolean(types.Or)
@@ -147,6 +156,7 @@ func (qb *Builder) OrWhere(column string, args ...interface{}) types.QueryBuilde
 	return qb
 }
 
+// WhereNot adds a WHERE NOT clause to the query.
 func (qb *Builder) WhereNot(column string, args ...interface{}) types.QueryBuilder {
 	clause := qb.parseWhereNotArgs(column, args...)
 	clause.SetBoolean(types.And)
@@ -154,6 +164,7 @@ func (qb *Builder) WhereNot(column string, args ...interface{}) types.QueryBuild
 	return qb
 }
 
+// OrWhereNot adds an OR WHERE NOT clause to the query.
 func (qb *Builder) OrWhereNot(column string, args ...interface{}) types.QueryBuilder {
 	clause := qb.parseWhereNotArgs(column, args...)
 	clause.SetBoolean(types.Or)
@@ -161,6 +172,7 @@ func (qb *Builder) OrWhereNot(column string, args ...interface{}) types.QueryBui
 	return qb
 }
 
+// WhereRaw adds raw SQL to the WHERE clause with optional bindings.
 func (qb *Builder) WhereRaw(raw string, bindings ...interface{}) types.QueryBuilder {
 	clause := clauses.NewWhereRawClause(raw)
 	clause.SetBoolean(types.And)
@@ -169,6 +181,7 @@ func (qb *Builder) WhereRaw(raw string, bindings ...interface{}) types.QueryBuil
 	return qb
 }
 
+// OrWhereRaw adds raw SQL to the WHERE clause with OR logic and optional bindings.
 func (qb *Builder) OrWhereRaw(raw string, bindings ...interface{}) types.QueryBuilder {
 	clause := clauses.NewWhereRawClause(raw)
 	clause.SetBoolean(types.Or)
@@ -177,6 +190,7 @@ func (qb *Builder) OrWhereRaw(raw string, bindings ...interface{}) types.QueryBu
 	return qb
 }
 
+// WhereBetween adds a BETWEEN clause to the query.
 func (qb *Builder) WhereBetween(column string, values []interface{}) types.QueryBuilder {
 	if len(values) != 2 {
 		return qb
@@ -187,6 +201,7 @@ func (qb *Builder) WhereBetween(column string, values []interface{}) types.Query
 	return qb
 }
 
+// WhereNotBetween adds a NOT BETWEEN clause to the query.
 func (qb *Builder) WhereNotBetween(column string, values []interface{}) types.QueryBuilder {
 	if len(values) != 2 {
 		return qb
@@ -197,6 +212,7 @@ func (qb *Builder) WhereNotBetween(column string, values []interface{}) types.Qu
 	return qb
 }
 
+// WhereIn adds an IN clause to the query.
 func (qb *Builder) WhereIn(column string, values []interface{}) types.QueryBuilder {
 	clause := clauses.NewWhereInClause(column, values, false)
 	clause.SetBoolean(types.And)
@@ -204,6 +220,7 @@ func (qb *Builder) WhereIn(column string, values []interface{}) types.QueryBuild
 	return qb
 }
 
+// WhereNotIn adds a NOT IN clause to the query.
 func (qb *Builder) WhereNotIn(column string, values []interface{}) types.QueryBuilder {
 	clause := clauses.NewWhereInClause(column, values, true)
 	clause.SetBoolean(types.And)
@@ -211,6 +228,7 @@ func (qb *Builder) WhereNotIn(column string, values []interface{}) types.QueryBu
 	return qb
 }
 
+// WhereNull adds an IS NULL clause to the query.
 func (qb *Builder) WhereNull(column string) types.QueryBuilder {
 	clause := clauses.NewWhereNullClause(column, false)
 	clause.SetBoolean(types.And)
@@ -218,6 +236,7 @@ func (qb *Builder) WhereNull(column string) types.QueryBuilder {
 	return qb
 }
 
+// WhereNotNull adds an IS NOT NULL clause to the query.
 func (qb *Builder) WhereNotNull(column string) types.QueryBuilder {
 	clause := clauses.NewWhereNullClause(column, true)
 	clause.SetBoolean(types.And)
@@ -225,6 +244,7 @@ func (qb *Builder) WhereNotNull(column string) types.QueryBuilder {
 	return qb
 }
 
+// WhereExists adds an EXISTS clause with a subquery to the query.
 func (qb *Builder) WhereExists(query types.QueryBuilder) types.QueryBuilder {
 	clause := clauses.NewWhereExistsClause(query, false)
 	clause.SetBoolean(types.And)
@@ -232,6 +252,7 @@ func (qb *Builder) WhereExists(query types.QueryBuilder) types.QueryBuilder {
 	return qb
 }
 
+// WhereNotExists adds a NOT EXISTS clause with a subquery to the query.
 func (qb *Builder) WhereNotExists(query types.QueryBuilder) types.QueryBuilder {
 	clause := clauses.NewWhereExistsClause(query, true)
 	clause.SetBoolean(types.And)
@@ -305,18 +326,22 @@ func (qb *Builder) parseWhereNotArgs(column string, args ...interface{}) *clause
 	return clauses.NewWhereClause(column, operator, value)
 }
 
+// Join adds an INNER JOIN clause to the query.
 func (qb *Builder) Join(table, first string, args ...interface{}) types.QueryBuilder {
 	return qb.addJoin(types.InnerJoin, table, first, args...)
 }
 
+// LeftJoin adds a LEFT JOIN clause to the query.
 func (qb *Builder) LeftJoin(table, first string, args ...interface{}) types.QueryBuilder {
 	return qb.addJoin(types.LeftJoin, table, first, args...)
 }
 
+// RightJoin adds a RIGHT JOIN clause to the query.
 func (qb *Builder) RightJoin(table, first string, args ...interface{}) types.QueryBuilder {
 	return qb.addJoin(types.RightJoin, table, first, args...)
 }
 
+// CrossJoin adds a CROSS JOIN clause to the query.
 func (qb *Builder) CrossJoin(table string) types.QueryBuilder {
 	qb.joins = append(qb.joins, clauses.NewCrossJoinClause(table))
 	return qb
@@ -343,6 +368,7 @@ func (qb *Builder) addJoin(joinType types.JoinType, table, first string, args ..
 	return qb
 }
 
+// OrderBy adds an ORDER BY clause to the query.
 func (qb *Builder) OrderBy(column string, direction ...types.OrderDirection) types.QueryBuilder {
 	dir := types.Asc
 	if len(direction) > 0 {
@@ -353,15 +379,18 @@ func (qb *Builder) OrderBy(column string, direction ...types.OrderDirection) typ
 	return qb
 }
 
+// OrderByDesc adds an ORDER BY clause with DESC direction.
 func (qb *Builder) OrderByDesc(column string) types.QueryBuilder {
 	return qb.OrderBy(column, types.Desc)
 }
 
+// OrderByRaw adds raw SQL to the ORDER BY clause.
 func (qb *Builder) OrderByRaw(raw string) types.QueryBuilder {
 	qb.orders = append(qb.orders, clauses.NewOrderRawClause(raw))
 	return qb
 }
 
+// GroupBy adds a GROUP BY clause to the query.
 func (qb *Builder) GroupBy(columns ...string) types.QueryBuilder {
 	for _, column := range columns {
 		qb.groups = append(qb.groups, clauses.NewGroupClause(column))
@@ -369,19 +398,23 @@ func (qb *Builder) GroupBy(columns ...string) types.QueryBuilder {
 	return qb
 }
 
+// GroupByRaw adds raw SQL to the GROUP BY clause.
 func (qb *Builder) GroupByRaw(raw string) types.QueryBuilder {
 	qb.groups = append(qb.groups, clauses.NewGroupRawClause(raw))
 	return qb
 }
 
+// Having adds a HAVING clause to the query.
 func (qb *Builder) Having(column string, args ...interface{}) types.QueryBuilder {
 	return qb.addHaving(column, types.And, args...)
 }
 
+// OrHaving adds an OR HAVING clause to the query.
 func (qb *Builder) OrHaving(column string, args ...interface{}) types.QueryBuilder {
 	return qb.addHaving(column, types.Or, args...)
 }
 
+// HavingRaw adds raw SQL to the HAVING clause.
 func (qb *Builder) HavingRaw(raw string) types.QueryBuilder {
 	clause := clauses.NewHavingRawClause(raw)
 	clause.SetBoolean(types.And)
@@ -389,6 +422,7 @@ func (qb *Builder) HavingRaw(raw string) types.QueryBuilder {
 	return qb
 }
 
+// OrHavingRaw adds raw SQL to the HAVING clause with OR logic.
 func (qb *Builder) OrHavingRaw(raw string) types.QueryBuilder {
 	clause := clauses.NewHavingRawClause(raw)
 	clause.SetBoolean(types.Or)
@@ -422,46 +456,55 @@ func (qb *Builder) addHaving(column string, boolean types.BooleanOperator, args 
 	return qb
 }
 
+// Limit adds a LIMIT clause to the query.
 func (qb *Builder) Limit(limit int) types.QueryBuilder {
 	qb.limitValue = &limit
 	return qb
 }
 
+// Offset adds an OFFSET clause to the query.
 func (qb *Builder) Offset(offset int) types.QueryBuilder {
 	qb.offsetValue = &offset
 	return qb
 }
 
+// Take is an alias for Limit that sets the maximum number of records to retrieve.
 func (qb *Builder) Take(limit int) types.QueryBuilder {
 	return qb.Limit(limit)
 }
 
+// Skip is an alias for Offset that sets the number of records to skip.
 func (qb *Builder) Skip(offset int) types.QueryBuilder {
 	return qb.Offset(offset)
 }
 
+// Union adds a UNION clause to combine results with another query.
 func (qb *Builder) Union(query types.QueryBuilder) types.QueryBuilder {
 	qb.unions = append(qb.unions, clauses.NewUnionClause(query))
 	return qb
 }
 
+// UnionAll adds a UNION ALL clause to combine results with another query including duplicates.
 func (qb *Builder) UnionAll(query types.QueryBuilder) types.QueryBuilder {
 	qb.unions = append(qb.unions, clauses.NewUnionAllClause(query))
 	return qb
 }
 
+// ForUpdate adds a FOR UPDATE lock clause to the query.
 func (qb *Builder) ForUpdate() types.QueryBuilder {
 	lock := types.ForUpdate
 	qb.lock = &lock
 	return qb
 }
 
+// ForShare adds a FOR SHARE lock clause to the query.
 func (qb *Builder) ForShare() types.QueryBuilder {
 	lock := types.ForShare
 	qb.lock = &lock
 	return qb
 }
 
+// When conditionally applies the callback function if the condition is true.
 func (qb *Builder) When(condition bool, callback types.ConditionalFunc) types.QueryBuilder {
 	if condition {
 		return callback(qb)
@@ -469,6 +512,7 @@ func (qb *Builder) When(condition bool, callback types.ConditionalFunc) types.Qu
 	return qb
 }
 
+// Unless conditionally applies the callback function if the condition is false.
 func (qb *Builder) Unless(condition bool, callback types.ConditionalFunc) types.QueryBuilder {
 	if !condition {
 		return callback(qb)
@@ -476,16 +520,19 @@ func (qb *Builder) Unless(condition bool, callback types.ConditionalFunc) types.
 	return qb
 }
 
+// Tap applies the callback function without modifying the query and returns the builder.
 func (qb *Builder) Tap(callback types.ConditionalFunc) types.QueryBuilder {
 	callback(qb)
 	return qb
 }
 
+// Scope applies one or more scope functions to the query builder.
 func (qb *Builder) Scope(scopes ...types.ScopeFunc) types.QueryBuilder {
 	qb.scopes = append(qb.scopes, scopes...)
 	return qb
 }
 
+// Debug enables debug mode for the query builder to capture SQL compilation info.
 func (qb *Builder) Debug() types.QueryBuilder {
 	qb.compiler.Debug()
 	return qb
@@ -497,31 +544,38 @@ func (qb *Builder) applyScopes() {
 	}
 }
 
+// ToSQL compiles the query builder into a SQL string and bindings.
 func (qb *Builder) ToSQL() (string, []interface{}, error) {
 	qb.applyScopes()
 	return qb.compiler.CompileSelect(qb)
 }
 
+// Get executes the query and returns all results as a collection.
 func (qb *Builder) Get(ctx context.Context) (types.Collection, error) {
 	return qb.execEngine.Get(ctx, qb)
 }
 
+// First executes the query and returns the first result.
 func (qb *Builder) First(ctx context.Context) (map[string]interface{}, error) {
 	return qb.execEngine.First(ctx, qb)
 }
 
+// Find retrieves a record by its primary key ID.
 func (qb *Builder) Find(ctx context.Context, id interface{}) (map[string]interface{}, error) {
 	return qb.execEngine.Find(ctx, qb, id)
 }
 
+// Pluck retrieves all values from a single column as a slice.
 func (qb *Builder) Pluck(ctx context.Context, column string) ([]interface{}, error) {
 	return qb.execEngine.Pluck(ctx, qb, column)
 }
 
+// Count executes the query and returns the number of matching rows.
 func (qb *Builder) Count(ctx context.Context) (int64, error) {
 	return qb.execEngine.Count(ctx, qb)
 }
 
+// Paginate executes a paginated query with full metadata including total count.
 func (qb *Builder) Paginate(ctx context.Context, page int, perPage int) (types.PaginationResult, error) {
 	// Validate input parameters
 	if page < 1 {
@@ -593,6 +647,7 @@ func (qb *Builder) Paginate(ctx context.Context, page int, perPage int) (types.P
 	return result, nil
 }
 
+// SimplePaginate executes a paginated query without calculating total count for better performance.
 func (qb *Builder) SimplePaginate(ctx context.Context, page int, perPage int) (types.PaginationResult, error) {
 	// Validate input parameters
 	if page < 1 {
@@ -652,6 +707,7 @@ func (qb *Builder) SimplePaginate(ctx context.Context, page int, perPage int) (t
 }
 
 // Async query methods
+// GetAsync executes the query asynchronously and returns a channel for results.
 func (qb *Builder) GetAsync(ctx context.Context) <-chan types.AsyncResult {
 	resultChan := make(chan types.AsyncResult, 1)
 	
@@ -664,6 +720,7 @@ func (qb *Builder) GetAsync(ctx context.Context) <-chan types.AsyncResult {
 	return resultChan
 }
 
+// CountAsync executes a count query asynchronously and returns a channel for the result.
 func (qb *Builder) CountAsync(ctx context.Context) <-chan types.AsyncCountResult {
 	resultChan := make(chan types.AsyncCountResult, 1)
 	
@@ -676,6 +733,7 @@ func (qb *Builder) CountAsync(ctx context.Context) <-chan types.AsyncCountResult
 	return resultChan
 }
 
+// PaginateAsync executes a paginated query asynchronously.
 func (qb *Builder) PaginateAsync(ctx context.Context, page int, perPage int) <-chan types.AsyncPaginationResult {
 	resultChan := make(chan types.AsyncPaginationResult, 1)
 	
@@ -688,90 +746,112 @@ func (qb *Builder) PaginateAsync(ctx context.Context, page int, perPage int) <-c
 	return resultChan
 }
 
+// Sum returns the sum of values in the specified column.
 func (qb *Builder) Sum(ctx context.Context, column string) (interface{}, error) {
 	return qb.execEngine.Sum(ctx, qb, column)
 }
 
+// Avg returns the average value of the specified column.
 func (qb *Builder) Avg(ctx context.Context, column string) (interface{}, error) {
 	return qb.execEngine.Avg(ctx, qb, column)
 }
 
+// Min returns the minimum value of the specified column.
 func (qb *Builder) Min(ctx context.Context, column string) (interface{}, error) {
 	return qb.execEngine.Min(ctx, qb, column)
 }
 
+// Max returns the maximum value of the specified column.
 func (qb *Builder) Max(ctx context.Context, column string) (interface{}, error) {
 	return qb.execEngine.Max(ctx, qb, column)
 }
 
+// Insert executes an INSERT query with the provided values.
 func (qb *Builder) Insert(ctx context.Context, values map[string]interface{}) error {
 	return qb.execEngine.Insert(ctx, qb, values)
 }
 
+// InsertBatch executes a batch INSERT query with multiple rows.
 func (qb *Builder) InsertBatch(ctx context.Context, values []map[string]interface{}) error {
 	return qb.execEngine.InsertBatch(ctx, qb, values)
 }
 
+// Update executes an UPDATE query and returns the number of affected rows.
 func (qb *Builder) Update(ctx context.Context, values map[string]interface{}) (int64, error) {
 	return qb.execEngine.Update(ctx, qb, values)
 }
 
+// Delete executes a DELETE query and returns the number of affected rows.
 func (qb *Builder) Delete(ctx context.Context) (int64, error) {
 	return qb.execEngine.Delete(ctx, qb)
 }
 
+// GetTable returns the table name for the query.
 func (qb *Builder) GetTable() string {
 	return qb.table
 }
 
+// GetSelects returns the SELECT clauses for the query.
 func (qb *Builder) GetSelects() []*clauses.SelectClause {
 	return qb.selects
 }
 
+// GetWheres returns the WHERE clauses for the query.
 func (qb *Builder) GetWheres() []*clauses.WhereClause {
 	return qb.wheres
 }
 
+// GetJoins returns the JOIN clauses for the query.
 func (qb *Builder) GetJoins() []*clauses.JoinClause {
 	return qb.joins
 }
 
+// GetOrders returns the ORDER BY clauses for the query.
 func (qb *Builder) GetOrders() []*clauses.OrderClause {
 	return qb.orders
 }
 
+// GetGroups returns the GROUP BY clauses for the query.
 func (qb *Builder) GetGroups() []*clauses.GroupClause {
 	return qb.groups
 }
 
+// GetHavings returns the HAVING clauses for the query.
 func (qb *Builder) GetHavings() []*clauses.HavingClause {
 	return qb.havings
 }
 
+// GetUnions returns the UNION clauses for the query.
 func (qb *Builder) GetUnions() []*clauses.UnionClause {
 	return qb.unions
 }
 
+// GetLimit returns the LIMIT value for the query.
 func (qb *Builder) GetLimit() *int {
 	return qb.limitValue
 }
 
+// GetOffset returns the OFFSET value for the query.
 func (qb *Builder) GetOffset() *int {
 	return qb.offsetValue
 }
 
+// IsDistinct returns true if the query has the DISTINCT modifier.
 func (qb *Builder) IsDistinct() bool {
 	return qb.distinct
 }
 
+// GetLock returns the lock type for the query.
 func (qb *Builder) GetLock() *types.LockType {
 	return qb.lock
 }
 
+// GetBindings returns the parameter bindings for the query.
 func (qb *Builder) GetBindings() []interface{} {
 	return qb.bindings
 }
 
+// GetDriver returns the database driver type.
 func (qb *Builder) GetDriver() types.Driver {
 	return qb.driver
 }

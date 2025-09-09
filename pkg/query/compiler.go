@@ -9,12 +9,14 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// SQLCompiler compiles query builder objects into SQL statements for different database drivers.
 type SQLCompiler struct {
 	driver    types.Driver
 	debug     bool
 	debugInfo *types.DebugInfo
 }
 
+// NewSQLCompiler creates a new SQL compiler for the specified database driver.
 func NewSQLCompiler(driver types.Driver) *SQLCompiler {
 	return &SQLCompiler{
 		driver: driver,
@@ -22,15 +24,18 @@ func NewSQLCompiler(driver types.Driver) *SQLCompiler {
 	}
 }
 
+// Debug enables debug mode to collect compilation information.
 func (c *SQLCompiler) Debug() *SQLCompiler {
 	c.debug = true
 	return c
 }
 
+// GetDebugInfo returns debug information from the last compilation.
 func (c *SQLCompiler) GetDebugInfo() *types.DebugInfo {
 	return c.debugInfo
 }
 
+// CompileSelect compiles a query builder into a SELECT SQL statement.
 func (c *SQLCompiler) CompileSelect(qb *Builder) (string, []interface{}, error) {
 	start := time.Now()
 	var parts []string
