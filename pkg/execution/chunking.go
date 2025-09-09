@@ -1,3 +1,5 @@
+// Package execution provides query execution functionality including chunking, updates, and upserts.
+// It handles the actual execution of built queries against database connections.
 package execution
 
 import (
@@ -42,7 +44,8 @@ func (e *QueryExecutor) Chunk(ctx context.Context, qb QueryBuilderInterface, siz
 	return nil
 }
 
-func (e *QueryExecutor) ChunkById(ctx context.Context, qb QueryBuilderInterface, size int, callback types.ChunkFunc, column ...string) error {
+// ChunkByID processes query results in chunks based on ID ordering.
+func (e *QueryExecutor) ChunkByID(ctx context.Context, qb QueryBuilderInterface, size int, callback types.ChunkFunc, column ...string) error {
 	if size <= 0 {
 		return fmt.Errorf("chunk size must be positive")
 	}
@@ -52,14 +55,14 @@ func (e *QueryExecutor) ChunkById(ctx context.Context, qb QueryBuilderInterface,
 		idColumn = column[0]
 	}
 
-	var lastId interface{}
+	var lastID interface{}
 
 	for {
 		clone := qb.Clone()
 		chunkQB := clone.OrderBy(idColumn).Limit(size)
 		
-		if lastId != nil {
-			chunkQB = chunkQB.Where(idColumn, ">", lastId)
+		if lastID != nil {
+			chunkQB = chunkQB.Where(idColumn, ">", lastID)
 		}
 
 		collection, err := e.Get(ctx, chunkQB.(QueryBuilderInterface))
@@ -80,7 +83,7 @@ func (e *QueryExecutor) ChunkById(ctx context.Context, qb QueryBuilderInterface,
 		}
 
 		lastItem := collection.ToSlice()[collection.Count()-1]
-		lastId = lastItem[idColumn]
+		lastID = lastItem[idColumn]
 	}
 
 	return nil
@@ -102,13 +105,14 @@ func (e *QueryExecutor) Each(ctx context.Context, qb QueryBuilderInterface, call
 	})
 }
 
-func (e *QueryExecutor) EachById(ctx context.Context, qb QueryBuilderInterface, callback types.LazyFunc, chunkSize ...int) error {
+// EachByID iterates over query results ordered by ID.
+func (e *QueryExecutor) EachByID(ctx context.Context, qb QueryBuilderInterface, callback types.LazyFunc, chunkSize ...int) error {
 	size := 1000
 	if len(chunkSize) > 0 && chunkSize[0] > 0 {
 		size = chunkSize[0]
 	}
 
-	return e.ChunkById(ctx, qb, size, func(collection types.Collection) error {
+	return e.ChunkByID(ctx, qb, size, func(collection types.Collection) error {
 		for _, item := range collection.ToSlice() {
 			if err := callback(item); err != nil {
 				return err
@@ -134,7 +138,8 @@ func (e *QueryExecutor) Lazy(ctx context.Context, qb QueryBuilderInterface, chun
 	}, nil
 }
 
-func (e *QueryExecutor) LazyById(ctx context.Context, qb QueryBuilderInterface, column string, chunkSize ...int) (*LazyCollection, error) {
+// LazyByID creates a lazy collection ordered by ID.
+func (e *QueryExecutor) LazyByID(ctx context.Context, qb QueryBuilderInterface, column string, chunkSize ...int) (*LazyCollection, error) {
 	size := 1000
 	if len(chunkSize) > 0 && chunkSize[0] > 0 {
 		size = chunkSize[0]
@@ -151,7 +156,7 @@ func (e *QueryExecutor) LazyById(ctx context.Context, qb QueryBuilderInterface, 
 		ctx:          ctx,
 		size:         size,
 		orderBy:      idColumn,
-		useIdCursor:  true,
+		useIDCursor:  true,
 		idColumn:     idColumn,
 	}, nil
 }
@@ -163,9 +168,9 @@ type LazyCollection struct {
 	size         int
 	offset       int
 	orderBy      string
-	useIdCursor  bool
+	useIDCursor  bool
 	idColumn     string
-	lastId       interface{}
+	lastID       interface{}
 	currentBatch types.Collection
 	batchIndex   int
 	finished     bool
@@ -215,10 +220,10 @@ func (lc *LazyCollection) Each(callback types.LazyFunc) error {
 func (lc *LazyCollection) loadNextBatch() error {
 	clone := lc.qb.Clone()
 	
-	if lc.useIdCursor {
+	if lc.useIDCursor {
 		batchQB := clone.OrderBy(lc.idColumn).Limit(lc.size)
-		if lc.lastId != nil {
-			batchQB = batchQB.Where(lc.idColumn, ">", lc.lastId)
+		if lc.lastID != nil {
+			batchQB = batchQB.Where(lc.idColumn, ">", lc.lastID)
 		}
 		
 		collection, err := lc.executor.Get(lc.ctx, batchQB.(QueryBuilderInterface))
@@ -230,7 +235,7 @@ func (lc *LazyCollection) loadNextBatch() error {
 		
 		if !collection.IsEmpty() {
 			lastItem := collection.ToSlice()[collection.Count()-1]
-			lc.lastId = lastItem[lc.idColumn]
+			lc.lastID = lastItem[lc.idColumn]
 		}
 	} else {
 		batchQB := clone.OrderBy(lc.orderBy).Limit(lc.size).Offset(lc.offset)
@@ -265,7 +270,7 @@ func (lc *LazyCollection) Filter(predicate func(map[string]interface{}) bool) *L
 		ctx:          lc.ctx,
 		size:         lc.size,
 		orderBy:      lc.orderBy,
-		useIdCursor:  lc.useIdCursor,
+		useIDCursor:  lc.useIDCursor,
 		idColumn:     lc.idColumn,
 		// Note: In a full implementation, you'd need to handle filtering properly
 		// For now, we'll return the original collection
@@ -280,7 +285,7 @@ func (lc *LazyCollection) Map(mapper func(map[string]interface{}) map[string]int
 		ctx:          lc.ctx,
 		size:         lc.size,
 		orderBy:      lc.orderBy,
-		useIdCursor:  lc.useIdCursor,
+		useIDCursor:  lc.useIDCursor,
 		idColumn:     lc.idColumn,
 		// Note: In a full implementation, you'd need to handle mapping properly
 		// For now, we'll return the original collection
@@ -300,7 +305,7 @@ func (e *QueryExecutor) Cursor(ctx context.Context, qb QueryBuilderInterface) (*
 
 	columns, err := rows.Columns()
 	if err != nil {
-		rows.Close()
+		_ = rows.Close()
 		return nil, fmt.Errorf("failed to get columns: %w", err)
 	}
 

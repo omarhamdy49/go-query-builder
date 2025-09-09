@@ -1,3 +1,5 @@
+// Package main demonstrates real-time threat detection capabilities of the go-query-builder.
+// It provides advanced security monitoring, anomaly detection, and threat intelligence features.
 package main
 
 import (
@@ -14,6 +16,8 @@ import (
 // Real-Time Threat Detection & Advanced Protection
 // Demonstrates active security monitoring and automatic threat response
 // Uncomment to run this example
+//
+//nolint:unused // Example function for documentation purposes
 func realtimeThreatDetection() {
 	fmt.Println("🚨 Real-Time Threat Detection & Advanced Protection")
 	fmt.Println("===================================================")
@@ -489,7 +493,7 @@ func NewThreatIntelligence() *ThreatIntelligence {
 	return ti
 }
 
-func (ti *ThreatIntelligence) CalculateThreatScore(indicator, threatType string) float64 {
+func (ti *ThreatIntelligence) CalculateThreatScore(_, threatType string) float64 {
 	baseScore := ti.knownThreats[threatType]
 	if baseScore == 0 {
 		baseScore = 3.0 // Default for unknown threats

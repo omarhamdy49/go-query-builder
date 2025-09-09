@@ -5,6 +5,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"math"
 	"time"
 
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
@@ -108,8 +109,17 @@ func (c *Connection) setupPgxPool() error {
 		return fmt.Errorf("failed to parse pgx pool config: %w", err)
 	}
 
-	poolConfig.MaxConns = int32(c.getMaxOpenConns())
-	poolConfig.MinConns = int32(c.getMaxIdleConns())
+	maxOpenConns := c.getMaxOpenConns()
+	if maxOpenConns > math.MaxInt32 {
+		maxOpenConns = math.MaxInt32
+	}
+	poolConfig.MaxConns = int32(maxOpenConns) //nolint:gosec // G115: bounds-checked conversion
+	
+	maxIdleConns := c.getMaxIdleConns()
+	if maxIdleConns > math.MaxInt32 {
+		maxIdleConns = math.MaxInt32
+	}
+	poolConfig.MinConns = int32(maxIdleConns) //nolint:gosec // G115: bounds-checked conversion
 	poolConfig.MaxConnLifetime = c.config.ConnMaxLifetime
 	poolConfig.MaxConnIdleTime = c.config.ConnMaxIdleTime
 

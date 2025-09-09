@@ -34,16 +34,16 @@ func TestLoadFromEnv(t *testing.T) {
 
 	// Set test env vars
 	for key, value := range testEnv {
-		os.Setenv(key, value)
+		_ = os.Setenv(key, value)
 	}
 
 	// Restore original env vars after test
 	defer func() {
 		for key, value := range originalEnv {
 			if value == "" {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			} else {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 		}
 	}()
@@ -105,20 +105,20 @@ func TestLoadFromEnvPostgreSQL(t *testing.T) {
 	originalEnv := make(map[string]string)
 	for _, key := range allEnvKeys {
 		originalEnv[key] = os.Getenv(key)
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 	}
 	
 	// Set test env vars
 	for key, value := range testEnv {
-		os.Setenv(key, value)
+		_ = os.Setenv(key, value)
 	}
 
 	defer func() {
 		for key, value := range originalEnv {
 			if value == "" {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			} else {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 		}
 	}()
@@ -149,13 +149,13 @@ func TestLoadFromEnvMissingRequired(t *testing.T) {
 	originalEnv := make(map[string]string)
 	for _, key := range envVars {
 		originalEnv[key] = os.Getenv(key)
-		os.Unsetenv(key)
+		_ = os.Unsetenv(key)
 	}
 
 	defer func() {
 		for key, value := range originalEnv {
 			if value != "" {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 		}
 	}()
@@ -194,17 +194,17 @@ func TestLoadFromEnvMissingRequired(t *testing.T) {
 				"DB_MAX_LIFETIME", "DB_MAX_IDLE_TIME",
 			}
 			for _, key := range allEnvKeys {
-				os.Unsetenv(key)
+				_ = os.Unsetenv(key)
 			}
 			defer func() {
 				for _, key := range allEnvKeys {
-					os.Unsetenv(key)
+					_ = os.Unsetenv(key)
 				}
 			}()
 			
 			// Set test env vars
 			for key, value := range tt.envVars {
-				os.Setenv(key, value)
+				_ = os.Setenv(key, value)
 			}
 
 			_, err := loadFromEnvInternal(false)

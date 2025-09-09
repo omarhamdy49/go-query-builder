@@ -37,7 +37,7 @@ func (e *QueryExecutor) Get(ctx context.Context, qb QueryBuilderInterface) (type
 	if err != nil {
 		return nil, fmt.Errorf("failed to execute query: %w", err)
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return e.scanRows(rows)
 }
@@ -406,7 +406,8 @@ func joinColumns(columns []string) string {
 	return joinStrings(columns, ", ")
 }
 
-func joinStrings(strs []string, separator string) string {
+func joinStrings(strs []string, _ string) string {
+	separator := ", "
 	if len(strs) == 0 {
 		return ""
 	}

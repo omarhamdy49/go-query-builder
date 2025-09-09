@@ -1,3 +1,5 @@
+// Package query provides the core query building functionality for SQL queries.
+// It includes the main Builder type and methods for constructing SELECT, INSERT, UPDATE, and DELETE queries.
 package query
 
 import (
@@ -9,6 +11,8 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// Builder provides a fluent interface for building SQL queries.
+// It supports SELECT, INSERT, UPDATE, DELETE operations with various clauses.
 type Builder struct {
 	executor    types.QueryExecutor
 	driver      types.Driver
@@ -27,9 +31,10 @@ type Builder struct {
 	scopes      []types.ScopeFunc
 	bindings    []interface{}
 	compiler    *SQLCompiler
-	executor_   *execution.QueryExecutor
+	execEngine   *execution.QueryExecutor
 }
 
+// NewBuilder creates a new query builder instance with the specified database executor and driver.
 func NewBuilder(executor types.QueryExecutor, driver types.Driver) *Builder {
 	qb := &Builder{
 		executor:    executor,
@@ -44,7 +49,7 @@ func NewBuilder(executor types.QueryExecutor, driver types.Driver) *Builder {
 		scopes:      make([]types.ScopeFunc, 0),
 		bindings:    make([]interface{}, 0),
 		compiler:    NewSQLCompiler(driver),
-		executor_:   execution.NewQueryExecutor(executor, driver),
+		execEngine:   execution.NewQueryExecutor(executor, driver),
 	}
 	return qb
 }
@@ -71,7 +76,7 @@ func (qb *Builder) Clone() types.QueryBuilder {
 		bindings:  make([]interface{}, len(qb.bindings)),
 		distinct:  qb.distinct,
 		compiler:  NewSQLCompiler(qb.driver),
-		executor_: execution.NewQueryExecutor(qb.executor, qb.driver),
+		execEngine: execution.NewQueryExecutor(qb.executor, qb.driver),
 	}
 
 	copy(clone.selects, qb.selects)
@@ -477,9 +482,7 @@ func (qb *Builder) Tap(callback types.ConditionalFunc) types.QueryBuilder {
 }
 
 func (qb *Builder) Scope(scopes ...types.ScopeFunc) types.QueryBuilder {
-	for _, scope := range scopes {
-		qb.scopes = append(qb.scopes, scope)
-	}
+	qb.scopes = append(qb.scopes, scopes...)
 	return qb
 }
 
@@ -500,23 +503,23 @@ func (qb *Builder) ToSQL() (string, []interface{}, error) {
 }
 
 func (qb *Builder) Get(ctx context.Context) (types.Collection, error) {
-	return qb.executor_.Get(ctx, qb)
+	return qb.execEngine.Get(ctx, qb)
 }
 
 func (qb *Builder) First(ctx context.Context) (map[string]interface{}, error) {
-	return qb.executor_.First(ctx, qb)
+	return qb.execEngine.First(ctx, qb)
 }
 
 func (qb *Builder) Find(ctx context.Context, id interface{}) (map[string]interface{}, error) {
-	return qb.executor_.Find(ctx, qb, id)
+	return qb.execEngine.Find(ctx, qb, id)
 }
 
 func (qb *Builder) Pluck(ctx context.Context, column string) ([]interface{}, error) {
-	return qb.executor_.Pluck(ctx, qb, column)
+	return qb.execEngine.Pluck(ctx, qb, column)
 }
 
 func (qb *Builder) Count(ctx context.Context) (int64, error) {
-	return qb.executor_.Count(ctx, qb)
+	return qb.execEngine.Count(ctx, qb)
 }
 
 func (qb *Builder) Paginate(ctx context.Context, page int, perPage int) (types.PaginationResult, error) {
@@ -686,35 +689,35 @@ func (qb *Builder) PaginateAsync(ctx context.Context, page int, perPage int) <-c
 }
 
 func (qb *Builder) Sum(ctx context.Context, column string) (interface{}, error) {
-	return qb.executor_.Sum(ctx, qb, column)
+	return qb.execEngine.Sum(ctx, qb, column)
 }
 
 func (qb *Builder) Avg(ctx context.Context, column string) (interface{}, error) {
-	return qb.executor_.Avg(ctx, qb, column)
+	return qb.execEngine.Avg(ctx, qb, column)
 }
 
 func (qb *Builder) Min(ctx context.Context, column string) (interface{}, error) {
-	return qb.executor_.Min(ctx, qb, column)
+	return qb.execEngine.Min(ctx, qb, column)
 }
 
 func (qb *Builder) Max(ctx context.Context, column string) (interface{}, error) {
-	return qb.executor_.Max(ctx, qb, column)
+	return qb.execEngine.Max(ctx, qb, column)
 }
 
 func (qb *Builder) Insert(ctx context.Context, values map[string]interface{}) error {
-	return qb.executor_.Insert(ctx, qb, values)
+	return qb.execEngine.Insert(ctx, qb, values)
 }
 
 func (qb *Builder) InsertBatch(ctx context.Context, values []map[string]interface{}) error {
-	return qb.executor_.InsertBatch(ctx, qb, values)
+	return qb.execEngine.InsertBatch(ctx, qb, values)
 }
 
 func (qb *Builder) Update(ctx context.Context, values map[string]interface{}) (int64, error) {
-	return qb.executor_.Update(ctx, qb, values)
+	return qb.execEngine.Update(ctx, qb, values)
 }
 
 func (qb *Builder) Delete(ctx context.Context) (int64, error) {
-	return qb.executor_.Delete(ctx, qb)
+	return qb.execEngine.Delete(ctx, qb)
 }
 
 func (qb *Builder) GetTable() string {

@@ -213,7 +213,7 @@ func SetEnvDefaults() {
 
 	for key, value := range envDefaults {
 		if os.Getenv(key) == "" {
-			os.Setenv(key, value)
+			_ = os.Setenv(key, value)
 		}
 	}
 }

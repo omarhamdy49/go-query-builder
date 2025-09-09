@@ -1,3 +1,5 @@
+// Package main demonstrates basic usage patterns of the go-query-builder library.
+// It provides simple examples of creating, reading, updating, and deleting data with the query builder.
 package main
 
 import (
@@ -10,6 +12,7 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+//nolint:unused // Example function for documentation purposes
 func main2() {
 	ctx := context.Background()
 
@@ -28,7 +31,7 @@ func main2() {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	basicSelects(ctx, db)
 	whereClauseExamples(ctx, db)
@@ -39,6 +42,7 @@ func main2() {
 	deleteExamples(ctx, db)
 }
 
+//nolint:unused // Example function for documentation purposes
 func basicSelects(ctx context.Context, db types.DB) {
 	fmt.Println("=== Basic SELECT Examples ===")
 
@@ -66,6 +70,7 @@ func basicSelects(ctx context.Context, db types.DB) {
 	}
 }
 
+//nolint:unused // Example function for documentation purposes
 func whereClauseExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== WHERE Clause Examples ===")
 
@@ -109,6 +114,7 @@ func whereClauseExamples(ctx context.Context, db types.DB) {
 	fmt.Printf("Found %d non-deleted users\n", collection.Count())
 }
 
+//nolint:unused // Example function for documentation purposes
 func joinExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== JOIN Examples ===")
 
@@ -134,6 +140,7 @@ func joinExamples(ctx context.Context, db types.DB) {
 	fmt.Printf("Found %d user-post combinations\n", collection.Count())
 }
 
+//nolint:unused // Example function for documentation purposes
 func aggregateExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== Aggregate Examples ===")
 
@@ -161,6 +168,7 @@ func aggregateExamples(ctx context.Context, db types.DB) {
 	}
 }
 
+//nolint:unused // Example function for documentation purposes
 func insertExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== INSERT Examples ===")
 
@@ -201,6 +209,7 @@ func insertExamples(ctx context.Context, db types.DB) {
 	}
 }
 
+//nolint:unused // Example function for documentation purposes
 func updateExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== UPDATE Examples ===")
 
@@ -227,6 +236,7 @@ func updateExamples(ctx context.Context, db types.DB) {
 	}
 }
 
+//nolint:unused // Example function for documentation purposes
 func deleteExamples(ctx context.Context, db types.DB) {
 	fmt.Println("\n=== DELETE Examples ===")
 

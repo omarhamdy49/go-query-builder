@@ -104,12 +104,12 @@ type QueryBuilder interface {
 	WhereAfterToday(column string) QueryBuilder
 	WhereTodayOrBefore(column string) QueryBuilder
 	WhereTodayOrAfter(column string) QueryBuilder
-	WhereJsonContains(column string, value interface{}) QueryBuilder
-	OrWhereJsonContains(column string, value interface{}) QueryBuilder
-	WhereJsonLength(column string, args ...interface{}) QueryBuilder
-	OrWhereJsonLength(column string, args ...interface{}) QueryBuilder
-	WhereJsonPath(column, path string, args ...interface{}) QueryBuilder
-	OrWhereJsonPath(column, path string, args ...interface{}) QueryBuilder
+	WhereJSONContains(column string, value interface{}) QueryBuilder
+	OrWhereJSONContains(column string, value interface{}) QueryBuilder
+	WhereJSONLength(column string, args ...interface{}) QueryBuilder
+	OrWhereJSONLength(column string, args ...interface{}) QueryBuilder
+	WhereJSONPath(column, path string, args ...interface{}) QueryBuilder
+	OrWhereJSONPath(column, path string, args ...interface{}) QueryBuilder
 	WhereFullText(columns []string, value string) QueryBuilder
 	OrWhereFullText(columns []string, value string) QueryBuilder
 	WhereAny(columns []string, args ...interface{}) QueryBuilder

@@ -1,3 +1,5 @@
+// Package main demonstrates advanced security validation features of the go-query-builder.
+// It shows comprehensive examples of input validation, threat detection, and secure query building.
 package main
 
 import (
@@ -12,6 +14,8 @@ import (
 // Advanced Security Validation Example
 // Demonstrates protection against sophisticated attack vectors
 // Uncomment to run this example
+//
+//nolint:unused // Example function for documentation purposes
 func advancedSecurityValidation() {
 	fmt.Println("🔐 Advanced Security Validation & Attack Prevention")
 	fmt.Println("==================================================")
@@ -248,7 +252,7 @@ func advancedSecurityValidation() {
 	results := make(chan error, concurrentQueries)
 
 	for i := 0; i < concurrentQueries; i++ {
-		go func(id int) {
+		go func(_ int) {
 			_, err := querybuilder.QB().Table("users").
 				Where("active", true).
 				Limit(1).

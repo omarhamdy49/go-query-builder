@@ -9,7 +9,8 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
-func (e *QueryExecutor) UpdateJson(ctx context.Context, qb QueryBuilderInterface, column string, path string, value interface{}) (int64, error) {
+// UpdateJSON updates a JSON field at a specific path.
+func (e *QueryExecutor) UpdateJSON(ctx context.Context, qb QueryBuilderInterface, column string, path string, value interface{}) (int64, error) {
 	table := qb.GetTable()
 	if table == "" {
 		return 0, fmt.Errorf("no table specified for update")
@@ -56,7 +57,8 @@ func (e *QueryExecutor) UpdateJson(ctx context.Context, qb QueryBuilderInterface
 	return rowsAffected, nil
 }
 
-func (e *QueryExecutor) UpdateJsonRemove(ctx context.Context, qb QueryBuilderInterface, column string, path string) (int64, error) {
+// UpdateJSONRemove removes a JSON field at a specific path.
+func (e *QueryExecutor) UpdateJSONRemove(ctx context.Context, qb QueryBuilderInterface, column string, path string) (int64, error) {
 	table := qb.GetTable()
 	if table == "" {
 		return 0, fmt.Errorf("no table specified for update")

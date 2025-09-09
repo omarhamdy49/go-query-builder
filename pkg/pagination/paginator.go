@@ -208,7 +208,7 @@ func (p *Paginator) getData(ctx context.Context, qb QueryBuilderInterface) (type
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() { _ = rows.Close() }()
 
 	return p.scanRows(rows)
 }

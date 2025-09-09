@@ -4,7 +4,7 @@ package optimization
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"sync"
@@ -166,10 +166,10 @@ func NewQueryOptimizer(config types.QueryOptimization) *QueryOptimizer {
 
 // GenerateCacheKey creates a cache key from SQL and bindings
 func (qo *QueryOptimizer) GenerateCacheKey(sql string, bindings []any) string {
-	hasher := md5.New()
+	hasher := sha256.New()
 	hasher.Write([]byte(sql))
 	for _, binding := range bindings {
-		hasher.Write([]byte(fmt.Sprintf("%v", binding)))
+		_, _ = fmt.Fprintf(hasher, "%v", binding)
 	}
 	return hex.EncodeToString(hasher.Sum(nil))
 }
@@ -314,7 +314,7 @@ func (qo *QueryOptimizer) ClearStats() {
 }
 
 func (qo *QueryOptimizer) generateSQLHash(sql string) string {
-	hasher := md5.New()
+	hasher := sha256.New()
 	hasher.Write([]byte(sql))
 	return hex.EncodeToString(hasher.Sum(nil))
 }

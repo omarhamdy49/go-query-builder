@@ -1,3 +1,5 @@
+// Package types provides type definitions, interfaces, and constants used throughout the go-query-builder.
+// It includes model structures, query builder interfaces, operators, and other shared types.
 package types
 
 import (

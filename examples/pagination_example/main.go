@@ -1,3 +1,5 @@
+// Package main demonstrates pagination features of the go-query-builder library.
+// It shows how to implement efficient pagination with limit, offset, and cursor-based navigation.
 package main
 
 import (

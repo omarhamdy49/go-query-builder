@@ -351,7 +351,7 @@ func TestStrictModeToggle(t *testing.T) {
 
 	// Disable strict mode
 	validator.SetStrictMode(false)
-	err = validator.ValidateTableName("table-with-dashes")
+	_ = validator.ValidateTableName("table-with-dashes")
 	// Should still error due to forbidden patterns, but different validation logic
 	// This test mainly ensures the SetStrictMode method works
 	

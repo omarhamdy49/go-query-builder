@@ -193,9 +193,9 @@ func (c *SQLCompiler) compileWhereClause(where *clauses.WhereClause) (string, []
 		bindings = append(bindings, subBindings...)
 		return fmt.Sprintf("%s (%s)", where.Operator, subSQL), bindings
 	case "json":
-		return c.compileJsonWhereClause(where, &bindings)
+		return c.compileJSONWhereClause(where, &bindings)
 	case "json_length":
-		return c.compileJsonLengthWhereClause(where, &bindings)
+		return c.compileJSONLengthWhereClause(where, &bindings)
 	case "fulltext":
 		return c.compileFullTextWhereClause(where, &bindings)
 	default:
@@ -203,7 +203,7 @@ func (c *SQLCompiler) compileWhereClause(where *clauses.WhereClause) (string, []
 	}
 }
 
-func (c *SQLCompiler) compileJsonWhereClause(where *clauses.WhereClause, bindings *[]interface{}) (string, []interface{}) {
+func (c *SQLCompiler) compileJSONWhereClause(where *clauses.WhereClause, bindings *[]interface{}) (string, []interface{}) {
 	switch c.driver {
 	case types.MySQL:
 		*bindings = append(*bindings, where.Column, where.Value)
@@ -216,7 +216,7 @@ func (c *SQLCompiler) compileJsonWhereClause(where *clauses.WhereClause, binding
 	}
 }
 
-func (c *SQLCompiler) compileJsonLengthWhereClause(where *clauses.WhereClause, bindings *[]interface{}) (string, []interface{}) {
+func (c *SQLCompiler) compileJSONLengthWhereClause(where *clauses.WhereClause, bindings *[]interface{}) (string, []interface{}) {
 	switch c.driver {
 	case types.MySQL:
 		*bindings = append(*bindings, where.Value)

@@ -1,3 +1,5 @@
+// Package main demonstrates the ultimate security features of the go-query-builder.
+// It provides comprehensive examples of advanced security measures, encryption, and protection mechanisms.
 package main
 
 import (
@@ -15,6 +17,7 @@ import (
 
 // Ultimate Security Features - Enterprise-Grade Protection
 // Demonstrates the highest possible security standards for database operations
+//nolint:unused // Example function for documentation purposes
 func main3() {
 	fmt.Println("🔐 ULTIMATE Security Features - Enterprise Grade Protection")
 	fmt.Println("=========================================================")
@@ -381,6 +384,7 @@ func main3() {
 }
 
 // Security validation functions
+//nolint:unused // Example function for documentation purposes
 func validateTransactionSecurity(data map[string]interface{}) bool {
 	for field, value := range data {
 		if !isInputSecure(value, field) {
@@ -390,7 +394,8 @@ func validateTransactionSecurity(data map[string]interface{}) bool {
 	return true
 }
 
-func isInputSecure(value interface{}, field string) bool {
+//nolint:unused // Example function for documentation purposes
+func isInputSecure(value interface{}, _ string) bool {
 	str := fmt.Sprintf("%v", value)
 
 	// Length validation
@@ -418,6 +423,7 @@ func isInputSecure(value interface{}, field string) bool {
 	return true
 }
 
+//nolint:unused // Example function for documentation purposes
 func isSensitiveField(field string) bool {
 	sensitiveFields := []string{"password", "credit_card", "ssn", "api_key", "token", "secret"}
 	fieldLower := strings.ToLower(field)
@@ -430,6 +436,7 @@ func isSensitiveField(field string) bool {
 	return false
 }
 
+//nolint:unused // Example function for documentation purposes
 func processSensitiveData(field string, value interface{}) string {
 	str := fmt.Sprintf("%v", value)
 
@@ -445,17 +452,20 @@ func processSensitiveData(field string, value interface{}) string {
 	}
 }
 
+//nolint:unused // Example function for documentation purposes
 func hashPassword(password string) string {
 	// In real implementation, use bcrypt or argon2
 	hash := sha256.Sum256([]byte(password + "salt"))
 	return "hash:" + hex.EncodeToString(hash[:])
 }
 
-func encryptData(data string) string {
+//nolint:unused // Example function for documentation purposes  
+func encryptData(_ string) string {
 	// In real implementation, use AES-256 or similar
 	return "encrypted:" + generateRandomString(32)
 }
 
+//nolint:unused // Example function for documentation purposes
 func maskValue(value interface{}) string {
 	str := fmt.Sprintf("%v", value)
 	if len(str) <= 4 {
@@ -464,9 +474,10 @@ func maskValue(value interface{}) string {
 	return str[:2] + strings.Repeat("*", len(str)-4) + str[len(str)-2:]
 }
 
+//nolint:unused // Example function for documentation purposes
 func generateRandomString(length int) string {
 	bytes := make([]byte, length)
-	rand.Read(bytes)
+	_, _ = rand.Read(bytes)
 	return hex.EncodeToString(bytes)[:length]
 }
 
@@ -479,6 +490,7 @@ type SecurityAuditLog struct {
 	IP        string
 }
 
+//nolint:unused // Example function for documentation purposes
 func createSecurityAuditLog(eventType, severity, details string) SecurityAuditLog {
 	return SecurityAuditLog{
 		Timestamp: time.Now().Format("2006-01-02 15:04:05 UTC"),

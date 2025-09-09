@@ -1,3 +1,5 @@
+// Package main demonstrates direct table operations with the go-query-builder.
+// It shows how to perform direct database table manipulations and raw query execution.
 package main
 
 import (

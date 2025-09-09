@@ -4,6 +4,7 @@ import (
 	"github.com/omarhamdy49/go-query-builder/pkg/types"
 )
 
+// WhereClause represents a WHERE clause in an SQL query.
 type WhereClause struct {
 	Type     string
 	Column   string
@@ -15,6 +16,7 @@ type WhereClause struct {
 	Raw      string
 }
 
+// NewWhereClause creates a new WHERE clause with the specified column, operator, and value.
 func NewWhereClause(column string, operator types.Operator, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "basic",
@@ -25,6 +27,7 @@ func NewWhereClause(column string, operator types.Operator, value interface{}) *
 	}
 }
 
+// NewWhereRawClause creates a new WHERE clause using raw SQL.
 func NewWhereRawClause(raw string) *WhereClause {
 	return &WhereClause{
 		Type:    "raw",
@@ -33,6 +36,7 @@ func NewWhereRawClause(raw string) *WhereClause {
 	}
 }
 
+// NewWhereBetweenClause creates a new BETWEEN WHERE clause.
 func NewWhereBetweenClause(column string, values []interface{}, not bool) *WhereClause {
 	operator := types.OpBetween
 	if not {
@@ -91,7 +95,7 @@ func NewWhereExistsClause(query types.QueryBuilder, not bool) *WhereClause {
 	}
 }
 
-func NewWhereJsonContainsClause(column string, value interface{}) *WhereClause {
+func NewWhereJSONContainsClause(column string, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "json",
 		Column:   column,
@@ -101,7 +105,7 @@ func NewWhereJsonContainsClause(column string, value interface{}) *WhereClause {
 	}
 }
 
-func NewWhereJsonLengthClause(column string, operator types.Operator, value interface{}) *WhereClause {
+func NewWhereJSONLengthClause(column string, operator types.Operator, value interface{}) *WhereClause {
 	return &WhereClause{
 		Type:     "json_length",
 		Column:   column,

@@ -1,3 +1,5 @@
+// Package main demonstrates secure CRUD operations using the go-query-builder.
+// It showcases protected database operations with comprehensive security validations.
 package main
 
 import (

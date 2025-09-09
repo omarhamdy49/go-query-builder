@@ -142,29 +142,29 @@ func (qb *Builder) addDateWhere(column, dateType string, boolean types.BooleanOp
 	return qb
 }
 
-func (qb *Builder) WhereJsonContains(column string, value interface{}) types.QueryBuilder {
-	clause := clauses.NewWhereJsonContainsClause(column, value)
+func (qb *Builder) WhereJSONContains(column string, value interface{}) types.QueryBuilder {
+	clause := clauses.NewWhereJSONContainsClause(column, value)
 	clause.SetBoolean(types.And)
 	qb.wheres = append(qb.wheres, clause)
 	return qb
 }
 
-func (qb *Builder) OrWhereJsonContains(column string, value interface{}) types.QueryBuilder {
-	clause := clauses.NewWhereJsonContainsClause(column, value)
+func (qb *Builder) OrWhereJSONContains(column string, value interface{}) types.QueryBuilder {
+	clause := clauses.NewWhereJSONContainsClause(column, value)
 	clause.SetBoolean(types.Or)
 	qb.wheres = append(qb.wheres, clause)
 	return qb
 }
 
-func (qb *Builder) WhereJsonLength(column string, args ...interface{}) types.QueryBuilder {
-	return qb.addJsonLengthWhere(column, types.And, args...)
+func (qb *Builder) WhereJSONLength(column string, args ...interface{}) types.QueryBuilder {
+	return qb.addJSONLengthWhere(column, types.And, args...)
 }
 
-func (qb *Builder) OrWhereJsonLength(column string, args ...interface{}) types.QueryBuilder {
-	return qb.addJsonLengthWhere(column, types.Or, args...)
+func (qb *Builder) OrWhereJSONLength(column string, args ...interface{}) types.QueryBuilder {
+	return qb.addJSONLengthWhere(column, types.Or, args...)
 }
 
-func (qb *Builder) addJsonLengthWhere(column string, boolean types.BooleanOperator, args ...interface{}) types.QueryBuilder {
+func (qb *Builder) addJSONLengthWhere(column string, boolean types.BooleanOperator, args ...interface{}) types.QueryBuilder {
 	if len(args) == 0 {
 		return qb
 	}
@@ -184,21 +184,21 @@ func (qb *Builder) addJsonLengthWhere(column string, boolean types.BooleanOperat
 		value = args[1]
 	}
 
-	clause := clauses.NewWhereJsonLengthClause(column, operator, value)
+	clause := clauses.NewWhereJSONLengthClause(column, operator, value)
 	clause.SetBoolean(boolean)
 	qb.wheres = append(qb.wheres, clause)
 	return qb
 }
 
-func (qb *Builder) WhereJsonPath(column, path string, args ...interface{}) types.QueryBuilder {
-	return qb.addJsonPathWhere(column, path, types.And, args...)
+func (qb *Builder) WhereJSONPath(column, path string, args ...interface{}) types.QueryBuilder {
+	return qb.addJSONPathWhere(column, path, types.And, args...)
 }
 
-func (qb *Builder) OrWhereJsonPath(column, path string, args ...interface{}) types.QueryBuilder {
-	return qb.addJsonPathWhere(column, path, types.Or, args...)
+func (qb *Builder) OrWhereJSONPath(column, path string, args ...interface{}) types.QueryBuilder {
+	return qb.addJSONPathWhere(column, path, types.Or, args...)
 }
 
-func (qb *Builder) addJsonPathWhere(column, path string, boolean types.BooleanOperator, args ...interface{}) types.QueryBuilder {
+func (qb *Builder) addJSONPathWhere(column, path string, boolean types.BooleanOperator, args ...interface{}) types.QueryBuilder {
 	if len(args) == 0 {
 		return qb
 	}

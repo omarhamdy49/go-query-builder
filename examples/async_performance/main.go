@@ -1,7 +1,10 @@
+// Package main demonstrates asynchronous performance features and concurrent query execution
+// using the go-query-builder with connection pooling and batch operations.
 package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"sync"
@@ -203,7 +206,7 @@ func asyncPerformanceExample() {
 
 		result.Data.Each(func(user map[string]any) bool {
 			processingWg.Add(1)
-			go func(userID any) {
+			go func(_ any) {
 				defer processingWg.Done()
 
 				// Simulate async processing (e.g., sending emails, updating records)
@@ -272,7 +275,7 @@ func asyncPerformanceExample() {
 	select {
 	case result := <-longQueryChan:
 		if result.Error != nil {
-			if result.Error == context.DeadlineExceeded {
+			if errors.Is(result.Error, context.DeadlineExceeded) {
 				fmt.Printf("⏰ Query timed out after 2 seconds\n")
 			} else {
 				fmt.Printf("❌ Query error: %v\n", result.Error)
@@ -333,10 +336,10 @@ func performanceMonitoringExample() {
 
 	// Simulate multiple queries for monitoring
 	queries := []func(){
-		func() { querybuilder.QB().Table("users").Get(ctx) },
-		func() { querybuilder.QB().Table("posts").Where("status", "published").Get(ctx) },
-		func() { querybuilder.QB().Table("comments").Count(ctx) },
-		func() { querybuilder.QB().Table("users").Where("age", ">", 18).Paginate(ctx, 1, 20) },
+		func() { _, _ = querybuilder.QB().Table("users").Get(ctx) },
+		func() { _, _ = querybuilder.QB().Table("posts").Where("status", "published").Get(ctx) },
+		func() { _, _ = querybuilder.QB().Table("comments").Count(ctx) },
+		func() { _, _ = querybuilder.QB().Table("users").Where("age", ">", 18).Paginate(ctx, 1, 20) },
 	}
 
 	start := time.Now()
